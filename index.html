@@ -359,7 +359,7 @@ header {
    
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
-  // ======== ایجاد کاربر پیش‌فرض ========
+// ======== کاربران پیش‌فرض (LocalStorage) ========
 if (!localStorage.init) {
   localStorage.init = 1;
   localStorage.users = JSON.stringify([
@@ -368,6 +368,178 @@ if (!localStorage.init) {
   localStorage.managements = JSON.stringify([{ id: 1, name: "مرکزی" }]);
   localStorage.contracts = JSON.stringify([]);
   alert("کاربر پیش‌فرض ساخته شد:\nنام کاربری: admin\nرمز عبور: 1234");
+}
+
+// ======== GLOBAL ========
+let currentUser = null;
+
+// ======== LOGIN / LOGOUT ========
+function login(){
+  const uVal = document.getElementById("username").value.trim();
+  const pVal = document.getElementById("password").value.trim();
+
+  if(!uVal || !pVal){
+    document.getElementById("loginError").innerText = "نام کاربری و رمز عبور را وارد کنید";
+    return;
+  }
+
+  const users = JSON.parse(localStorage.users);
+  const user = users.find(u => u.username === uVal && u.password === pVal);
+
+  if(user){
+    currentUser = { ...user };
+    document.getElementById('loginContainer').style.display = 'none';
+    document.getElementById('app').classList.remove('hidden');
+    document.querySelector('.sidebar').classList.remove('hidden');
+    document.getElementById('userInfo').innerText = currentUser.username;
+    renderAll();
+  } else {
+    document.getElementById("loginError").innerText = "نام کاربری یا رمز عبور اشتباه است";
+  }
+}
+
+function logout(){
+  currentUser = null;
+  location.reload();
+}
+// ======== باز کردن بخش‌ها ========
+function openSection(section){
+  const sections = ['admin','contract','list','dashboard','search','finance'];
+  sections.forEach(s => {
+    const el = document.getElementById('sec-' + s);
+    if(!el) return;
+    if(s === section) el.classList.remove('hidden');
+    else el.classList.add('hidden');
+
+    // فقط ادمین و مدیر ارشد اجازه بخش ادمین
+    if(s==='admin' && (!currentUser || !['admin','supermanager'].includes(currentUser.role))){
+      el.classList.add('hidden');
+    }
+  });
+}
+
+// ======== تمام مدیریت‌ها و کاربران ========
+function renderAll(){
+  renderManagements();
+  renderUsers();
+}
+
+function renderManagements(){
+  const mgList = JSON.parse(localStorage.managements);
+  const mgSelects = document.querySelectorAll('select[id$="Mg"]');
+  mgSelects.forEach(sel => {
+    sel.innerHTML = '';
+    mgList.forEach(m => {
+      const opt = document.createElement('option');
+      opt.value = m.name;
+      opt.text = m.name;
+      sel.appendChild(opt);
+    });
+  });
+
+  // نمایش لیست مدیریت در پنل ادمین
+  const ul = document.getElementById('mgList');
+  if(ul){
+    ul.innerHTML = '';
+    mgList.forEach(m => {
+      const li = document.createElement('li');
+      li.textContent = m.name + " ";
+      const btn = document.createElement('button');
+      btn.textContent = "حذف";
+      btn.onclick = () => deleteManagement(m.name);
+      li.appendChild(btn);
+      ul.appendChild(li);
+    });
+  }
+}
+
+function addManagement(){
+  if(!currentUser || currentUser.role !== 'admin') return alert('فقط ادمین اجازه دارد');
+  const name = document.getElementById('mgName').value.trim();
+  if(!name) return;
+
+  const mgList = JSON.parse(localStorage.managements);
+  if(mgList.find(m=>m.name===name)) return alert("مدیریت قبلا وجود دارد");
+
+  mgList.push({ name });
+  localStorage.managements = JSON.stringify(mgList);
+  document.getElementById('mgName').value = '';
+  renderManagements();
+}
+
+function deleteManagement(name){
+  let mgList = JSON.parse(localStorage.managements);
+  mgList = mgList.filter(m=>m.name!==name);
+  localStorage.managements = JSON.stringify(mgList);
+  renderManagements();
+}
+
+function renderUsers(){
+  const users = JSON.parse(localStorage.users);
+  const editSelect = document.getElementById('editUser');
+  if(editSelect){
+    editSelect.innerHTML = '';
+    users.forEach(u => {
+      const opt = document.createElement('option');
+      opt.value = u.id;
+      opt.text = u.username + " (" + u.role + ")";
+      editSelect.appendChild(opt);
+    });
+  }
+}
+
+function addUser(){
+  if(!currentUser || currentUser.role !== 'admin') return alert('فقط ادمین اجازه دارد');
+
+  const username = document.getElementById('uName').value.trim();
+  const password = document.getElementById('uPass').value.trim();
+  const role = document.getElementById('uRole').value;
+  const mg = document.getElementById('uMg').value;
+
+  if(!username || !password) return alert("نام کاربری و رمز وارد شود");
+
+  const users = JSON.parse(localStorage.users);
+  if(users.find(u=>u.username===username)) return alert("کاربر قبلا وجود دارد");
+
+  const id = Date.now();
+  users.push({ id, username, password, role, mg });
+  localStorage.users = JSON.stringify(users);
+
+  document.getElementById('uName').value = '';
+  document.getElementById('uPass').value = '';
+  renderUsers();
+}
+
+// تغییر رمز
+function changePassword(){
+  const userId = document.getElementById('editUser').value;
+  const newPassword = document.getElementById('newPass').value.trim();
+  if(!newPassword) return alert("رمز جدید وارد کنید");
+
+  const users = JSON.parse(localStorage.users);
+  const user = users.find(u=>u.id==userId);
+  if(!user) return alert("کاربر پیدا نشد");
+
+  user.password = newPassword;
+  localStorage.users = JSON.stringify(users);
+  alert("رمز با موفقیت تغییر کرد");
+  document.getElementById('newPass').value = '';
+}
+
+// حذف کاربر
+function deleteUser(){
+  const userId = document.getElementById('editUser').value;
+  let users = JSON.parse(localStorage.users);
+  users = users.filter(u=>u.id!=userId);
+  localStorage.users = JSON.stringify(users);
+  renderUsers();
+}
+
+// فرمت اعداد
+function formatNumber(val, type){
+  if(type==='rial') return val.toLocaleString() + " ریال";
+  if(type==='usd') return "$ " + val.toLocaleString();
+  return val;
 }
 
   // ================== FIREBASE INIT ==================
