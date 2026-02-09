@@ -6,12 +6,19 @@
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:tahoma;background:linear-gradient(135deg,#f1f5f9,#e2e8f0);}
-.hidden { display: none ; }
-body { background-image: url(./2.jpg); background-size: cover; background-position: center; background-repeat: no-repeat;}
+.hidden {
+  display: none ;
+}
+body {
+  background-image: url(./2.jpg); /* آدرس عکس */
+  background-size: cover; /* کل صفحه را بگیرد */
+  background-position: center; /* وسط صفحه */
+  background-repeat: no-repeat;
+}
+
 header{background:#0f172a;color:#fff;padding:15px 25px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 4px 10px rgba(0,0,0,0.1);}
 .card{background:#fff;margin:20px;padding:20px;border-radius:18px;box-shadow:0 15px 40px rgba(0,0,0,.1);transition:all 0.3s;}
 .card:hover{transform:translateY(-5px);box-shadow:0 20px 50px rgba(0,0,0,0.15);}
@@ -23,31 +30,107 @@ table{width:100%;border-collapse:collapse}th,td{padding:10px;border-bottom:1px s
 .progress{height:12px;background:#e5e7eb;border-radius:10px;overflow:hidden}
 .progress span{height:100%;display:block;background:linear-gradient(90deg,#22c55e,#16a34a);transition:width 0.5s;}
 .dashboard{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:15px}.stat{background:#f8fafc;padding:15px;border-radius:15px;text-align:center}
+
 .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);align-items:center;justify-content:center;z-index:1000}
 .modal.show{display:flex}
 .modal .card{width:90%;max-width:900px;max-height:90vh;overflow-y:auto;position:relative}
 .modal-close{position:absolute;top:10px;left:10px;background:#dc2626;color:#fff;border:none;border-radius:50%;width:32px;height:32px;cursor:pointer}
+
 .app-layout{display:flex;height:calc(100vh - 70px)}
 .sidebar{width:260px;background:#020617;color:#fff;padding:15px;overflow-y:auto}
 .sidebar h4{margin:10px 0;font-size:14px;opacity:.8}
 .sidebar button{width:100%;margin:4px 0;background:#1e293b}
 .main{flex:1;overflow-y:auto;padding:10px}
+
 .input-icon{position: relative;display: inline-block;width: 100%;}
 .input-icon i{position: absolute;left: 10px; top: 50%; transform: translateY(-50%); color: #888; pointer-events: none;}
 .input-icon input{padding-left: 30px;}
+
 #toast{position:fixed;bottom:20px;right:20px;background:#22c55e;color:#fff;padding:15px 20px;border-radius:10px;display:none;z-index:2000;}
-.user-menu {display: flex;align-items: center;justify-content: center;}
-header > div:last-child {display: flex;align-items: center;gap: 8px;}
-header {background: url(./3.jpg) no-repeat center/cover;color: #fff;padding: 15px 25px;}
+.user-menu {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+header > div:last-child {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+header {
+  background: url(./3.jpg) no-repeat center/cover;
+  color: #fff;
+  padding: 15px 25px;
+}
 /* --- LOGIN CENTER --- */
-.login-container {display: flex;justify-content: center;align-items: center;height: 100vh;width: 100%;position: fixed;top: 0;left: 0;background: rgba(0,0,0,0.2);z-index: 10000;}
-.login-card {background: #ffffffcc;backdrop-filter: blur(8px);padding: 40px 30px;border-radius: 20px;box-shadow: 0 15px 40px rgba(0,0,0,0.2);width: 300px;text-align: center;}
-.login-card .login-logo {width: 60px;height: 60px;margin-bottom: 15px;}
-.login-card h2 {margin-bottom: 25px;font-size: 20px;color: #0f172a;}
-.login-card input {width: 100%;padding: 10px 15px;margin: 10px 0;border-radius: 10px;border: 1px solid #cbd5e1;font-size: 14px;}
-.login-card button {width: 100%;padding: 10px;margin-top: 15px;background: #2563eb;color: #fff;border: none;border-radius: 10px;cursor: pointer;font-size: 15px;transition: 0.3s;}
-.login-card button:hover {opacity: 0.9;}
-.error-message {color: #dc2626;font-size: 13px;margin-top: 10px;}
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  background: rgba(0,0,0,0.2); /* دلخواه: سایه پس‌زمینه */
+  z-index: 10000; /* روی همه چیز قرار بگیرد */
+}
+
+.login-card {
+  background: #ffffffcc;
+  backdrop-filter: blur(8px);
+  padding: 40px 30px;
+  border-radius: 20px;
+  box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+  width: 300px;
+  text-align: center;
+}
+
+.login-card .login-logo {
+  width: 60px;
+  height: 60px;
+  margin-bottom: 15px;
+}
+
+.login-card h2 {
+  margin-bottom: 25px;
+  font-size: 20px;
+  color: #0f172a;
+}
+
+.login-card input {
+  width: 100%;
+  padding: 10px 15px;
+  margin: 10px 0;
+  border-radius: 10px;
+  border: 1px solid #cbd5e1;
+  font-size: 14px;
+}
+
+.login-card button {
+  width: 100%;
+  padding: 10px;
+  margin-top: 15px;
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 15px;
+  transition: 0.3s;
+}
+
+.login-card button:hover {
+  opacity: 0.9;
+}
+
+.error-message {
+  color: #dc2626;
+  font-size: 13px;
+  margin-top: 10px;
+}
+
+
 </style>
 </head>
 <body>
@@ -56,23 +139,55 @@ header {background: url(./3.jpg) no-repeat center/cover;color: #fff;padding: 15p
   <div><i class="bi bi-journal-text"></i> سامانه مدیریت قرارداد</div>
  <div>
   <span id="userInfo"></span>
-  <img id="userAvatar" style="display:none;width:32px;height:32px;border-radius:50%">
-  <button onclick="openProfileModal()">پروفایل</button>
+<img id="userAvatar" style="display:none;width:32px;height:32px;border-radius:50%">
+<button onclick="openProfileModal()">پروفایل</button>
   <button onclick="logout()"><i class="bi bi-box-arrow-right"></i> خروج</button>
 </div>
+
 </header>
 
 <!-- LOGIN BOX -->
+<!-- LOGIN CONTAINER -->
 <div id="loginContainer" class="login-container">
   <div class="login-card">
     <img src="./4.png" alt="لوگو" class="login-logo">
     <h2>ورود به سامانه</h2>
+
     <input id="username" type="text" placeholder="نام کاربری">
     <input id="password" type="password" placeholder="رمز عبور">
+
     <button onclick="login()">ورود</button>
+
     <p id="loginError" class="error-message"></p>
   </div>
 </div>
+
+<div id="profileModal" class="modal">
+  <div class="card">
+    <button class="modal-close" onclick="closeProfileModal()">×</button>
+    <h3>ویرایش پروفایل</h3>
+    
+    <div style="text-align:center;margin-bottom:10px;">
+      <img id="profileAvatarPreview" src="" alt="تصویر پروفایل" style="width:100px;height:100px;border-radius:50%;object-fit:cover;border:2px solid #ccc;">
+    </div>
+    
+    <input type="file" id="profileAvatar" accept="image/*"><br><br>
+    <input id="profileUsername" placeholder="نام کاربری" disabled>
+    <input id="profilePassword" type="password" placeholder="رمز عبور">
+    <input id="profilePasswordConfirm" type="password" placeholder="تکرار رمز عبور">
+    <select id="profileRole" disabled>
+      <option value="user">کاربر</option>
+      <option value="manager">مدیر</option>
+      <option value="admin">ادمین</option>
+      <option value="supermanager">مدیر ارشد</option>
+    </select>
+    <select id="profileMg" disabled></select>
+    <button onclick="saveProfile()">ذخیره تغییرات</button>
+  </div>
+</div>
+
+</div>
+
 
 <!-- APP LAYOUT -->
 <div id="app" class="hidden app-layout">
@@ -90,596 +205,730 @@ header {background: url(./3.jpg) no-repeat center/cover;color: #fff;padding: 15p
   <!-- MAIN SECTION -->
   <div class="main">
     <!-- ADMIN PANEL -->
-    <div id="sec-admin" class="card hidden">
-      <h3>پنل ادمین</h3>
-      <input id="mgName" placeholder="نام مدیریت">
-      <button onclick="addManagement()"><i class="bi bi-plus"></i> افزودن مدیریت</button>
-      <ul id="mgList"></ul>
-      <hr>
-      <input id="uName" placeholder="نام کاربری">
-      <input id="uPass" placeholder="رمز">
-      <select id="uRole">
-        <option value="user">کاربر</option>
-        <option value="manager">مدیر</option>
-        <option value="admin">ادمین</option>
-        <option value="supermanager">مدیر ارشد</option>
-      </select>
-      <select id="uMg"></select>
-      <button onclick="addUser()"><i class="bi bi-person-plus"></i> افزودن کاربر</button>
-      <hr>
-      <select id="editUser"></select>
-      <input id="newPass" placeholder="رمز جدید">
-      <button onclick="changePassword()">تغییر رمز</button>
-      <button class="red" onclick="deleteUser()">حذف</button>
+<div id="sec-admin" class="card hidden">
+  <h3>پنل ادمین</h3>
+  <input id="mgName" placeholder="نام مدیریت">
+  <button onclick="addManagement()"><i class="bi bi-plus"></i> افزودن مدیریت</button>
+  <ul id="mgList"></ul>
+  <hr>
+  <input id="uName" placeholder="نام کاربری">
+  <input id="uPass" placeholder="رمز">
+  <select id="uRole">
+    <option value="user">کاربر</option>
+    <option value="manager">مدیر</option>
+    <option value="admin">ادمین</option>
+    <option value="supermanager">مدیر ارشد</option>
+  </select>
+  <select id="uMg"></select>
+  <button onclick="addUser()"><i class="bi bi-person-plus"></i> افزودن کاربر</button>
+  <hr>
+  <select id="editUser"></select>
+  <input id="newPass" placeholder="رمز جدید">
+  <button onclick="changePassword()">تغییر رمز</button>
+  <button class="red" onclick="deleteUser()">حذف</button>
+</div>
+
+<!-- CONTRACT PANEL -->
+<div id="sec-contract" class="card hidden">
+  <h3>ثبت قرارداد</h3>
+  <div class="input-icon">
+    <i class="bi bi-file-text"></i>
+    <input id="cName" placeholder="نام قرارداد">
+  </div>
+  <input id="cNumber" placeholder="شماره قرارداد">
+  <input id="cIndustries" placeholder="نام صنایع">
+  <input id="cGroup" placeholder="نام گروه">
+  <input id="cIndustry" placeholder="نام صنعت">
+  <select id="cMg"></select>
+  <input id="cTotalR" type="number" placeholder="مبلغ کل (ریال)">
+  <input id="cTotalD" type="number" placeholder="مبلغ کل (دلار)">
+  <input id="cAssignR" type="number" placeholder="مبلغ واگذاری (ریال)">
+  <input id="cAssignD" type="number" placeholder="مبلغ واگذاری (دلار)">
+  <input id="cCommitR" type="number" placeholder="تعهد صنعت (ریال)">
+  <input id="cCommitD" type="number" placeholder="تعهد صنعت (دلار)">
+  <input id="cCount" type="number" placeholder="تعداد محصول">
+  <input type="file" id="cFiles" multiple>
+  <button onclick="saveContract()"><i class="bi bi-save"></i> ذخیره قرارداد</button>
+</div>
+
+<!-- CONTRACT LIST -->
+<div id="sec-list" class="card hidden">
+  <h3>لیست قراردادها</h3>
+  <button onclick="exportContractsExcel()"><i class="bi bi-file-earmark-spreadsheet"></i> خروجی Excel</button>
+  <table>
+    <thead>
+      <tr>
+        <th>نام</th>
+        <th>مدیریت</th>
+        <th>پیشرفت</th>
+        <th>بدهی / طلب</th>
+        <th>فایل‌ها</th>
+        <th>عملیات</th>
+      </tr>
+    </thead>
+    <tbody id="contracts"></tbody>
+  </table>
+</div>
+
+<!-- SEARCH -->
+<div id="sec-search" class="card hidden">
+  <h3>جستجو قرارداد</h3>
+  <input id="sText" placeholder="نام قرارداد | شماره قرارداد | مدیریت">
+  <button onclick="searchContracts()">جستجو</button>
+  <table>
+    <thead>
+      <tr>
+        <th>نام</th>
+        <th>مدیریت</th>
+        <th>پیشرفت</th>
+        <th>بدهی / طلب</th>
+        <th>فایل‌ها</th>
+        <th>عملیات</th>
+      </tr>
+    </thead>
+    <tbody id="searchResult"></tbody>
+  </table>
+</div>
+
+<!-- DASHBOARD -->
+<div id="sec-dashboard" class="card hidden">
+  <h3>داشبورد</h3>
+  <div id="dashboard" class="dashboard"></div>
+</div>
+
+<!-- FINANCE DASHBOARD -->
+<div id="sec-finance" class="card hidden">
+  <h3>داشبورد مالی</h3>
+  <canvas id="financeChart" height="150"></canvas>
+</div>
+
+<!-- DELIVERY MODAL -->
+<div id="deliveryModal" class="modal">
+  <div class="card">
+    <button class="modal-close" onclick="closeDelivery()"><i class="bi bi-x-lg"></i></button>
+    <h3>تحویل محصول</h3>
+    <input type="date" id="dDate">
+    <input type="number" id="dQty" placeholder="تعداد">
+    <input id="dPlace" placeholder="محل تحویل">
+    <select id="dStatus">
+      <option value="عملیاتی">عملیاتی</option>
+      <option value="عملیاتی محدود">عملیاتی محدود</option>
+      <option value="غیرعملیاتی">غیرعملیاتی</option>
+    </select>
+    <button onclick="saveDelivery()">ثبت تحویل</button>
+    <table>
+      <thead><tr><th>تاریخ</th><th>تعداد</th><th>محل</th><th>وضعیت</th><th>عملیات</th></tr></thead>
+      <tbody id="deliveryList"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- EDIT CONTRACT MODAL -->
+<div id="editContractModal" class="modal">
+  <div class="card">
+    <button class="modal-close" onclick="closeEditContract()"><i class="bi bi-x-lg"></i></button>
+    <h3>ویرایش قرارداد</h3>
+    <div>
+      <input id="eName" placeholder="نام قرارداد">
+      <input id="eNumber" placeholder="شماره قرارداد">
+      <input id="eIndustries" placeholder="نام صنایع">
+      <input id="eGroup" placeholder="نام گروه">
+      <input id="eIndustry" placeholder="نام صنعت">
+      <select id="eMg"></select>
+      <input id="eTotalR" type="number" placeholder="مبلغ کل (ریال)">
+      <input id="eTotalD" type="number" placeholder="مبلغ کل (دلار)">
+      <input id="eAssignR" type="number" placeholder="مبلغ واگذاری (ریال)">
+      <input id="eAssignD" type="number" placeholder="مبلغ واگذاری (دلار)">
+      <input id="eCommitR" type="number" placeholder="تعهد صنعت (ریال)">
+      <input id="eCommitD" type="number" placeholder="تعهد صنعت (دلار)">
+      <input id="eCount" type="number" placeholder="تعداد محصول">
+      <input type="file" id="eFiles" multiple>
+      <button onclick="saveEditedContract()">ذخیره تغییرات</button>
     </div>
+  </div>
+</div>
+   
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script>
+  // === INIT DATA ===
+  if(!localStorage.init){
+    localStorage.init = 1;
+    localStorage.managements = JSON.stringify([{id:1,name:'مرکزی'}]);
+    localStorage.users = JSON.stringify([{id:1,username:'admin',password:'1234',role:'admin'}]);
+    localStorage.contracts = JSON.stringify([]);
+  }
 
-    <!-- CONTRACT PANEL -->
-    <div id="sec-contract" class="card hidden">
-      <h3>ثبت قرارداد</h3>
-      <div class="input-icon">
-        <i class="bi bi-file-text"></i>
-        <input id="cName" placeholder="نام قرارداد">
-      </div>
-      <input id="cNumber" placeholder="شماره قرارداد">
-      <input id="cIndustries" placeholder="نام صنایع">
-      <input id="cGroup" placeholder="نام گروه">
-      <input id="cIndustry" placeholder="نام صنعت">
-      <select id="cMg"></select>
-      <input id="cTotalR" type="number" placeholder="مبلغ کل (ریال)">
-      <input id="cTotalD" type="number" placeholder="مبلغ کل (دلار)">
-      <input id="cAssignR" type="number" placeholder="مبلغ واگذاری (ریال)">
-      <input id="cAssignD" type="number" placeholder="مبلغ واگذاری (دلار)">
-      <input id="cCommitR" type="number" placeholder="تعهد صنعت (ریال)">
-      <input id="cCommitD" type="number" placeholder="تعهد صنعت (دلار)">
-      <input id="cCount" type="number" placeholder="تعداد محصول">
-      <input type="file" id="cFiles" multiple>
-      <button onclick="saveContract()"><i class="bi bi-save"></i> ذخیره قرارداد</button>
-    </div>
+  const g = k => JSON.parse(localStorage[k]||'[]');
+  const s = (k,v) => localStorage[k] = JSON.stringify(v);
 
-    <!-- CONTRACT LIST -->
-    <div id="sec-list" class="card hidden">
-      <h3>لیست قراردادها</h3>
-      <button onclick="exportContractsExcel()"><i class="bi bi-file-earmark-spreadsheet"></i> خروجی Excel</button>
-      <table>
-        <thead>
-          <tr>
-            <th>نام</th>
-            <th>مدیریت</th>
-            <th>پیشرفت</th>
-            <th>بدهی / طلب</th>
-            <th>فایل‌ها</th>
-            <th>عملیات</th>
-          </tr>
-        </thead>
-        <tbody id="contracts"></tbody>
-      </table>
-    </div>
+  let editId = null, currentContractId = null, currentUser = null;
 
-    <!-- SEARCH -->
-    <div id="sec-search" class="card hidden">
-      <h3>جستجو قرارداد</h3>
-      <input id="sText" placeholder="نام قرارداد | شماره قرارداد | مدیریت">
-      <button onclick="searchContracts()">جستجو</button>
-      <table>
-        <thead>
-          <tr>
-            <th>نام</th>
-            <th>مدیریت</th>
-            <th>پیشرفت</th>
-            <th>بدهی / طلب</th>
-            <th>فایل‌ها</th>
-            <th>عملیات</th>
-          </tr>
-        </thead>
-        <tbody id="searchResult"></tbody>
-      </table>
-    </div>
+  // === LOGIN / LOGOUT ===
+  function login(){
+  const uVal = document.getElementById("username").value.trim();
+  const pVal = document.getElementById("password").value.trim();
 
-    <!-- DASHBOARD -->
-    <div id="sec-dashboard" class="card hidden">
-      <h3>داشبورد</h3>
-      <div id="dashboard" class="dashboard"></div>
-    </div>
+  if(!uVal || !pVal){
+    document.getElementById("loginError").innerText = "نام کاربری و رمز عبور را وارد کنید";
+    return;
+  }
 
-    <!-- FINANCE DASHBOARD -->
-    <div id="sec-finance" class="card hidden">
-      <h3>داشبورد مالی</h3>
-      <canvas id="financeChart" height="150"></canvas>
-    </div>
+  const u = g('users').find(x => x.username === uVal && x.password === pVal);
+  if(!u){
+    document.getElementById("loginError").innerText = "نام کاربری یا رمز عبور اشتباه است";
+    return;
+  }
 
-    <!-- DELIVERY MODAL -->
-    <div id="deliveryModal" class="modal">
-      <div class="card">
-        <button class="modal-close" onclick="closeDelivery()"><i class="bi bi-x-lg"></i></button>
-        <h3>تحویل محصول</h3>
-        <input type="date" id="dDate">
-        <input type="number" id="dQty" placeholder="تعداد">
-        <input id="dPlace" placeholder="محل تحویل">
-        <select id="dStatus">
-          <option value="عملیاتی">عملیاتی</option>
-          <option value="عملیاتی محدود">عملیاتی محدود</option>
-          <option value="غیرعملیاتی">غیرعملیاتی</option>
-        </select>
-        <button onclick="saveDelivery()">ثبت تحویل</button>
-        <table>
-          <thead><tr><th>تاریخ</th><th>تعداد</th><th>محل</th><th>وضعیت</th><th>عملیات</th></tr></thead>
-          <tbody id="deliveryList"></tbody>
-        </table>
-      </div>
-    </div>
+  // ورود موفق
+  currentUser = u;
+  localStorage.currentUser = JSON.stringify(u);
 
-    <!-- EDIT CONTRACT MODAL -->
-    <div id="editContractModal" class="modal">
-      <div class="card">
-        <button class="modal-close" onclick="closeEditContract()"><i class="bi bi-x-lg"></i></button>
-        <h3>ویرایش قرارداد</h3>
-        <div>
-          <input id="eName" placeholder="نام قرارداد">
-          <input id="eNumber" placeholder="شماره قرارداد">
-          <input id="eIndustries" placeholder="نام صنایع">
-          <input id="eGroup" placeholder="نام گروه">
-          <input id="eIndustry" placeholder="نام صنعت">
-          <select id="eMg"></select>
-          <input id="eTotalR" type="number" placeholder="مبلغ کل (ریال)">
-          <input id="eTotalD" type="number" placeholder="مبلغ کل (دلار)">
-          <input id="eAssignR" type="number" placeholder="مبلغ واگذاری (ریال)">
-          <input id="eAssignD" type="number" placeholder="مبلغ واگذاری (دلار)">
-          <input id="eCommitR" type="number" placeholder="تعهد صنعت (ریال)">
-          <input id="eCommitD" type="number" placeholder="تعهد صنعت (دلار)">
-          <input id="eCount" type="number" placeholder="تعداد محصول">
-          <input type="file" id="eFiles" multiple>
-          <button onclick="saveEditedContract()">ذخیره تغییرات</button>
-        </div>
-      </div>
-    </div>
+  // مخفی کردن فرم ورود و نمایش اپلیکیشن
+  document.getElementById('loginContainer').style.display = 'none';
+  document.getElementById('app').classList.remove('hidden');
+  document.querySelector('.sidebar').classList.remove('hidden');
 
-    <!-- DESC MODAL -->
-    <div id="descModal" class="modal">
-      <div class="card">
-        <button class="modal-close" onclick="closeDesc()">×</button>
-        <h3>توضیحات قرارداد</h3>
-        <textarea id="descText" style="width:100%;height:150px"></textarea>
-        <button onclick="saveDesc()">ذخیره</button>
-      </div>
-    </div>
+  userInfo.innerText = u.username;
+  if(u.role !== 'admin' && u.role !== 'supermanager') btnAdmin.style.display='none';
+  userAvatar.style.display = "inline-block";
 
-    <!-- DETAIL MODAL -->
-    <div id="detailModal" class="modal">
-      <div class="card">
-        <button class="modal-close" onclick="closeDetail()">×</button>
-        <h3>جزئیات قرارداد</h3>
-        <div id="detailContent"></div>
-      </div>
-    </div>
+  renderAll();
+  updateUserInfo();
+}
 
-    <!-- PROFILE MODAL -->
-    <div id="profileModal" class="modal">
-      <div class="card">
-        <button class="modal-close" onclick="closeProfileModal()">×</button>
-        <h3>ویرایش پروفایل</h3>
-        <div style="text-align:center;margin-bottom:10px;">
-          <img id="profileAvatarPreview" src="" alt="تصویر پروفایل" style="width:100px;height:100px;border-radius:50%;object-fit:cover;border:2px solid #ccc;">
-        </div>
-        <input type="file" id="profileAvatar" accept="image/*"><br><br>
-        <input id="profileUsername" placeholder="نام کاربری" disabled>
-        <input id="profilePassword" type="password" placeholder="رمز عبور">
-        <input id="profilePasswordConfirm" type="password" placeholder="تکرار رمز عبور">
-        <select id="profileRole" disabled>
-          <option value="user">کاربر</option>
-          <option value="manager">مدیر</option>
-          <option value="admin">ادمین</option>
-          <option value="supermanager">مدیر ارشد</option>
-        </select>
-        <select id="profileMg" disabled></select>
-        <button onclick="saveProfile()">ذخیره تغییرات</button>
-      </div>
-    </div>
 
-    <!-- TOAST -->
-    <div id="toast" style="position:fixed;bottom:20px;right:20px;background:#22c55e;color:#fff;padding:15px 20px;border-radius:10px;display:none;z-index:2000;"></div>
+  function logout(){
+    userAvatar.style.display = "none";
+        location.reload(); }
 
-    <!-- SCRIPT START -->
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-      // === INIT DATA ===
-      if(!localStorage.init){
-        localStorage.init = 1;
-        localStorage.managements = JSON.stringify([{id:1,name:'مرکزی'}]);
-        localStorage.users = JSON.stringify([{id:1,username:'admin',password:'1234',role:'admin'}]);
-        localStorage.contracts = JSON.stringify([]);
-      }
+  // === OPEN SECTIONS ===
+  function openSection(section){
+  ['admin','contract','list','dashboard','search','finance'].forEach(s=>{
+    const el = document.getElementById('sec-'+s);
+    if(!el) return;
 
-      const g = k => JSON.parse(localStorage[k]||'[]');
-      const s = (k,v) => localStorage[k] = JSON.stringify(v);
+    el.classList.add('hidden');
 
-      let editId = null, currentContractId = null, currentUser = null;
-      document.addEventListener("DOMContentLoaded", ()=> {
-        // اگر کاربر در localStorage موجود است، خودکار ورود شود
-        if(localStorage.currentUser){
-          currentUser = JSON.parse(localStorage.currentUser);
-          document.getElementById('loginContainer').style.display='none';
-          document.getElementById('app').classList.remove('hidden');
-          document.querySelector('.sidebar').classList.remove('hidden');
-          updateUserInfo();
-          renderAll();
-        }
+    if(s === section){
+      el.classList.remove('hidden');
+    }
+
+    if(s==='admin' && !['admin','supermanager'].includes(currentUser.role)){
+  el.classList.add('hidden');
+}
+
+  });
+}
+
+  // === MANAGEMENT & USERS ===
+  function addManagement(){
+    if(currentUser.role!=='admin') return alert('فقط ادمین اجازه دارد');
+    const m = g('managements'); 
+    m.push({id:Date.now(),name:mgName.value});
+    s('managements',m);
+    mgName.value='';
+    renderAll();
+  }
+
+  function deleteManagement(id){
+    if(currentUser.role!=='admin') return alert('فقط ادمین اجازه دارد');
+    if(g('contracts').some(c=>c.mg===g('managements').find(m=>m.id===id)?.name)) return alert('این مدیریت دارای قرارداد است');
+    s('managements',g('managements').filter(m=>m.id!==id));
+    renderAll();
+  }
+
+  function addUser(){
+    if(currentUser.role!=='admin') return alert('فقط ادمین اجازه دارد');
+    const u = g('users');
+    u.push({id:Date.now(),username:uName.value,password:uPass.value,role:uRole.value,mg:uMg.value});
+    s('users',u);
+    renderAll();
+  }
+
+  function changePassword(){
+    const u = g('users');
+    u.find(x=>x.id==editUser.value).password=newPass.value;
+    s('users',u);
+    alert('رمز عبور تغییر یافت');
+  }
+
+  function deleteUser(){
+    s('users',g('users').filter(x=>x.id!=editUser.value));
+    renderAll();
+  }
+
+  // === CONTRACT HELPERS ===
+  function getVisibleContracts(){
+  const all = g('contracts');
+  if(!currentUser) return [];
+  if(currentUser.role==='admin' || currentUser.role==='supermanager') return all;
+  return all.filter(c=>c.mg===currentUser.mg);
+}
+
+  function readFiles(input){
+    return new Promise(resolve=>{
+      const files=[];
+      if(!input.files.length) return resolve(files);
+      let count=0;
+      [...input.files].forEach(f=>{
+        const r = new FileReader();
+        r.onload = e=>{ files.push({name:f.name,data:e.target.result}); if(++count===input.files.length) resolve(files); }
+        r.readAsDataURL(f);
       });
+    });
+  }
 
-      // === LOGIN / LOGOUT ===
-      function login(){
-        const uVal = document.getElementById("username").value.trim();
-        const pVal = document.getElementById("password").value.trim();
+  async function collectContractInputs(inputFiles){
+    const files = await readFiles(inputFiles);
+    return {
+      name:cName.value,
+      number:cNumber.value,
+      industries:cIndustries.value,
+      group:cGroup.value,
+      industry:cIndustry.value,
+      mg:cMg.value,
+      totalR:+cTotalR.value||0,
+      totalD:+cTotalD.value||0,
+      assignR:+cAssignR.value||0,
+      assignD:+cAssignD.value||0,
+      commitR:+cCommitR.value||0,
+      commitD:+cCommitD.value||0,
+      count:+cCount.value||0,
+      description: "",
+      files
+    };
+  }
 
-        if(!uVal || !pVal){
-          document.getElementById("loginError").innerText = "نام کاربری و رمز عبور را وارد کنید";
-          return;
-        }
+  // === CONTRACT CRUD ===
+  async function saveContract(){
+    const list = g('contracts');
+    const data = await collectContractInputs(cFiles);
+    if(currentUser.role!=='admin' && data.mg!==currentUser.mg) return alert('فقط برای مدیریت خود می‌توانید ثبت کنید');
 
-        const u = g('users').find(x => x.username === uVal && x.password === pVal);
-        if(!u){
-          document.getElementById("loginError").innerText = "نام کاربری یا رمز عبور اشتباه است";
-          return;
-        }
+    if(editId){
+      Object.assign(list.find(x=>x.id===editId), data);
+      editId=null;
+      showToast('ویرایش قرارداد با موفقیت انجام شد');
+    } else {
+      list.push({id:Date.now(), deliveries:[], description:"", ...data});
+      showToast('قرارداد با موفقیت ثبت شد');
+    }
 
-        currentUser = u;
-        localStorage.currentUser = JSON.stringify(u);
+    s('contracts', list);
+    cFiles.value='';
+    renderAll();
+  }
 
-        document.getElementById('loginContainer').style.display = 'none';
-        document.getElementById('app').classList.remove('hidden');
-        document.querySelector('.sidebar').classList.remove('hidden');
+  function editContract(id){
+    const c = g('contracts').find(x=>x.id===id);
+    if(currentUser.role!=='admin' && c.mg!==currentUser.mg) return alert('دسترسی ندارید');
+    editId=id;
+    eName.value=c.name; eNumber.value=c.number; eIndustries.value=c.industries;
+    eGroup.value=c.group; eIndustry.value=c.industry; eMg.value=c.mg;
+    eTotalR.value=c.totalR; eTotalD.value=c.totalD; eAssignR.value=c.assignR; eAssignD.value=c.assignD;
+    eCommitR.value=c.commitR; eCommitD.value=c.commitD; eCount.value=c.count;
+    editContractModal.classList.add('show'); document.body.style.overflow='hidden'; renderEditMg();
+  }
 
-        updateUserInfo();
-        renderAll();
+  async function saveEditedContract(){
+    if(!editId) return alert('هیچ قراردادی برای ویرایش انتخاب نشده');
+    const list = g('contracts');
+    const c = list.find(x=>x.id===editId);
+    if(!c) return alert('قرارداد پیدا نشد');
 
-        if(u.role !== 'admin' && u.role !== 'supermanager'){
-          document.getElementById('btnAdmin').style.display='none';
-        }
-      }
+    const newFiles = await readFiles(eFiles);
+    if(!c.files) c.files=[];
+    c.files.push(...newFiles);
 
-      function logout(){
-        localStorage.removeItem('currentUser');
-        location.reload();
-      }
+    c.name=eName.value; c.number=eNumber.value; c.industries=eIndustries.value;
+    c.group=eGroup.value; c.industry=eIndustry.value; c.mg=eMg.value;
+    c.totalR=+eTotalR.value||0; c.totalD=+eTotalD.value||0;
+    c.assignR=+eAssignR.value||0; c.assignD=+eAssignD.value||0;
+    c.commitR=+eCommitR.value||0; c.commitD=+eCommitD.value||0;
+    c.count=+eCount.value||0;
 
-      // === UPDATE USER INFO ===
-      function updateUserInfo() {
-        if(!currentUser) return;
-        document.getElementById("userInfo").innerText = currentUser.username;
-        document.getElementById("userAvatar").src = currentUser.avatar || "https://via.placeholder.com/32";
-        document.getElementById("userAvatar").style.display = "inline-block";
-      }
+    s('contracts', list);
+    eFiles.value='';
+    closeEditContract();
+    renderAll();
+    showToast('ویرایش قرارداد با موفقیت انجام شد');
+  }
 
-      // === OPEN SECTIONS ===
-      function openSection(section){
-        ['admin','contract','list','dashboard','search','finance'].forEach(s=>{
-          const el = document.getElementById('sec-'+s);
-          if(el) el.classList.add('hidden');
-        });
-        const showEl = document.getElementById('sec-'+section);
-        if(showEl) showEl.classList.remove('hidden');
-        if(section==='admin' && !['admin','supermanager'].includes(currentUser.role)){
-          document.getElementById('sec-admin').classList.add('hidden');
-        }
-      }
+  function closeEditContract(){ editContractModal.classList.remove('show'); document.body.style.overflow=''; }
+  function deleteContract(id){
+    const list=g('contracts'); const c=list.find(x=>x.id===id);
+    if(currentUser.role!=='admin' && c.mg!==currentUser.mg) return alert('دسترسی ندارید');
+    if(confirm('حذف قرارداد؟')){s('contracts',list.filter(x=>x.id!==id)); renderAll();}
+  }
 
-      // === MANAGEMENT & USERS ===
-      function addManagement(){
-        if(currentUser.role!=='admin') return alert('فقط ادمین اجازه دارد');
-        const m = g('managements');
-        m.push({id:Date.now(),name:document.getElementById('mgName').value});
-        s('managements',m);
-        document.getElementById('mgName').value='';
-        renderAll();
-      }
+  function deleteContractFile(contractId,index){
+    const list=g('contracts'); const c=list.find(x=>x.id===contractId);
+    if(currentUser.role!=='admin' && c.mg!==currentUser.mg) return alert('دسترسی ندارید');
+    if(confirm(`حذف فایل ${c.files[index].name}؟`)){c.files.splice(index,1); s('contracts',list); renderContracts();}
+  }
 
-      function deleteManagement(id){
-        if(currentUser.role!=='admin') return alert('فقط ادمین اجازه دارد');
-        const contracts = g('contracts');
-        const mgName = g('managements').find(m=>m.id===id)?.name;
-        if(contracts.some(c=>c.mg===mgName)) return alert('این مدیریت دارای قرارداد است');
-        s('managements',g('managements').filter(m=>m.id!==id));
-        renderAll();
-      }
+  // === DELIVERY ===
+  function openDelivery(id){
+    const c=g('contracts').find(x=>x.id===id);
+    if(currentUser.role!=='admin' && c.mg!==currentUser.mg) return alert('دسترسی ندارید');
+    currentContractId=id; deliveryModal.classList.add('show'); document.body.style.overflow='hidden'; renderDeliveries();
+  }
 
-      function addUser(){
-        if(currentUser.role!=='admin') return alert('فقط ادمین اجازه دارد');
-        const uName = document.getElementById('uName').value;
-        const uPass = document.getElementById('uPass').value;
-        const uRole = document.getElementById('uRole').value;
-        const uMg = document.getElementById('uMg').value;
+  function closeDelivery(){ deliveryModal.classList.remove('show'); document.body.style.overflow=''; }
+  function saveDelivery(){
+    const list=g('contracts'); const c=list.find(x=>x.id===currentContractId);
+    c.deliveries.push({id:Date.now(),date:dDate.value,qty:+dQty.value,place:dPlace.value,status:dStatus.value});
+    s('contracts',list); renderDeliveries(); renderContracts(); closeDelivery();
+  }
+  function deleteDelivery(id){
+    const list=g('contracts'); const c=list.find(x=>x.id===currentContractId);
+    c.deliveries=c.deliveries.filter(d=>d.id!==id); s('contracts',list); renderDeliveries(); renderContracts();
+  }
 
-        const users = g('users');
-        users.push({id:Date.now(),username:uName,password:uPass,role:uRole,mg:uMg});
-        s('users',users);
-        renderAll();
-      }
+  function renderDeliveries(){
+    const c=g('contracts').find(x=>x.id===currentContractId);
+    deliveryList.innerHTML='';
+    c.deliveries.forEach(d=>{
+      deliveryList.innerHTML+=`<tr>
+        <td>${d.date}</td><td>${d.qty}</td><td>${d.place}</td><td>${d.status}</td>
+        <td><button class="red" onclick="deleteDelivery(${d.id})"><i class="bi bi-trash"></i></button></td>
+      </tr>`;
+    });
+  }
 
-      function changePassword(){
-        const newPass = document.getElementById('newPass').value;
-        const editUserId = document.getElementById('editUser').value;
-        const users = g('users');
-        const u = users.find(x=>x.id==editUserId);
-        if(u){
-          u.password=newPass;
-          s('users',users);
-          alert('رمز عبور تغییر یافت');
-        }
-      }
+  // === RENDER CONTRACTS & DASHBOARD ===
+  function renderContracts(){
+    const visibleContracts = getVisibleContracts();
+    contracts.innerHTML = '';
+    visibleContracts.forEach(c=>{
+      const delivered = c.deliveries.reduce((a,b)=>a+b.qty,0);
+      const p = c.count ? Math.min(100, Math.round(delivered/c.count*100)) : 0;
+      const debtR = c.assignR - c.commitR;
+      const debtD = c.assignD - c.commitD;
 
-      function deleteUser(){
-        const editUserId = document.getElementById('editUser').value;
-        s('users', g('users').filter(x=>x.id!=editUserId));
-        renderAll();
-      }
-
-      // === CONTRACT HELPERS ===
-      function getVisibleContracts(){
-        const all = g('contracts');
-        if(!currentUser) return [];
-        if(['admin','supermanager'].includes(currentUser.role)) return all;
-        return all.filter(c=>c.mg===currentUser.mg);
-      }
-
-      async function readFiles(input){
-        return new Promise(resolve=>{
-          const files=[];
-          if(!input.files.length) return resolve(files);
-          let count=0;
-          [...input.files].forEach(f=>{
-            const r = new FileReader();
-            r.onload=e=>{ files.push({name:f.name,data:e.target.result}); if(++count===input.files.length) resolve(files); };
-            r.readAsDataURL(f);
-          });
-        });
-      }
-
-      async function collectContractInputs(inputFiles){
-        const files = await readFiles(inputFiles);
-        return {
-          name:document.getElementById('cName').value,
-          number:document.getElementById('cNumber').value,
-          industries:document.getElementById('cIndustries').value,
-          group:document.getElementById('cGroup').value,
-          industry:document.getElementById('cIndustry').value,
-          mg:document.getElementById('cMg').value,
-          totalR:+document.getElementById('cTotalR').value||0,
-          totalD:+document.getElementById('cTotalD').value||0,
-          assignR:+document.getElementById('cAssignR').value||0,
-          assignD:+document.getElementById('cAssignD').value||0,
-          commitR:+document.getElementById('cCommitR').value||0,
-          commitD:+document.getElementById('cCommitD').value||0,
-          count:+document.getElementById('cCount').value||0,
-          description: "",
-          files
-        };
-      }
-
-      async function saveContract(){
-        const data = await collectContractInputs(document.getElementById('cFiles'));
-        const contracts = g('contracts');
-
-        if(editId){
-          Object.assign(contracts.find(x=>x.id===editId), data);
-          editId=null;
-          showToast('ویرایش قرارداد با موفقیت انجام شد');
-        } else {
-          contracts.push({id:Date.now(),deliveries:[],...data});
-          showToast('قرارداد با موفقیت ثبت شد');
-        }
-
-        s('contracts',contracts);
-        document.getElementById('cFiles').value='';
-        renderAll();
-      }
-
-      function editContract(id){
-        const c = g('contracts').find(x=>x.id===id);
-        if(!['admin'].includes(currentUser.role) && c.mg!==currentUser.mg) return alert('دسترسی ندارید');
-        editId=id;
-        document.getElementById('eName').value=c.name;
-        document.getElementById('eNumber').value=c.number;
-        document.getElementById('eIndustries').value=c.industries;
-        document.getElementById('eGroup').value=c.group;
-        document.getElementById('eIndustry').value=c.industry;
-        document.getElementById('eMg').value=c.mg;
-        document.getElementById('eTotalR').value=c.totalR;
-        document.getElementById('eTotalD').value=c.totalD;
-        document.getElementById('eAssignR').value=c.assignR;
-        document.getElementById('eAssignD').value=c.assignD;
-        document.getElementById('eCommitR').value=c.commitR;
-        document.getElementById('eCommitD').value=c.commitD;
-        document.getElementById('eCount').value=c.count;
-
-        document.getElementById('editContractModal').classList.add('show');
-        document.body.style.overflow='hidden';
-      }
-
-      async function saveEditedContract(){
-        if(!editId) return alert('هیچ قراردادی انتخاب نشده');
-        const contracts = g('contracts');
-        const c = contracts.find(x=>x.id===editId);
-        if(!c) return alert('قرارداد پیدا نشد');
-
-        const newFiles = await readFiles(document.getElementById('eFiles'));
-        if(!c.files) c.files=[];
-        c.files.push(...newFiles);
-
-        c.name=document.getElementById('eName').value;
-        c.number=document.getElementById('eNumber').value;
-        c.industries=document.getElementById('eIndustries').value;
-        c.group=document.getElementById('eGroup').value;
-        c.industry=document.getElementById('eIndustry').value;
-        c.mg=document.getElementById('eMg').value;
-        c.totalR=+document.getElementById('eTotalR').value||0;
-        c.totalD=+document.getElementById('eTotalD').value||0;
-        c.assignR=+document.getElementById('eAssignR').value||0;
-        c.assignD=+document.getElementById('eAssignD').value||0;
-        c.commitR=+document.getElementById('eCommitR').value||0;
-        c.commitD=+document.getElementById('eCommitD').value||0;
-        c.count=+document.getElementById('eCount').value||0;
-
-        s('contracts',contracts);
-        document.getElementById('eFiles').value='';
-        closeEditContract();
-        renderAll();
-        showToast('ویرایش قرارداد با موفقیت انجام شد');
-      }
-
-      function closeEditContract(){ document.getElementById('editContractModal').classList.remove('show'); document.body.style.overflow=''; }
-
-      // === DELIVERY ===
-      function openDelivery(id){ 
-        const c=g('contracts').find(x=>x.id===id); 
-        if(!['admin'].includes(currentUser.role) && c.mg!==currentUser.mg) return alert('دسترسی ندارید'); 
-        currentContractId=id; 
-        document.getElementById('deliveryModal').classList.add('show'); 
-        document.body.style.overflow='hidden'; 
-        renderDeliveries(); 
-      }
-
-      function closeDelivery(){ document.getElementById('deliveryModal').classList.remove('show'); document.body.style.overflow=''; }
-
-      function saveDelivery(){
-        const c=g('contracts').find(x=>x.id===currentContractId);
-        c.deliveries.push({
-          id:Date.now(),
-          date:document.getElementById('dDate').value,
-          qty:+document.getElementById('dQty').value||0,
-          place:document.getElementById('dPlace').value,
-          status:document.getElementById('dStatus').value
-        });
-        s('contracts',g('contracts'));
-        renderDeliveries(); renderContracts(); closeDelivery();
-      }
-
-      function deleteDelivery(id){
-        const c=g('contracts').find(x=>x.id===currentContractId);
-        c.deliveries=c.deliveries.filter(d=>d.id!==id);
-        s('contracts',g('contracts'));
-        renderDeliveries(); renderContracts();
-      }
-
-      function renderDeliveries(){
-        const c=g('contracts').find(x=>x.id===currentContractId);
-        const tbody=document.getElementById('deliveryList');
-        tbody.innerHTML='';
-        c.deliveries.forEach(d=>{
-          tbody.innerHTML+=`<tr>
-            <td>${d.date}</td><td>${d.qty}</td><td>${d.place}</td><td>${d.status}</td>
-            <td><button class="red" onclick="deleteDelivery(${d.id})"><i class="bi bi-trash"></i></button></td>
-          </tr>`;
+      let fileLinks = '---';
+      if(c.files?.length){
+        fileLinks='';
+        c.files.forEach((f,i)=>{
+          fileLinks+=`<div>
+            <a href="${f.data}" download="${f.name}">${f.name}</a>
+            <button class="red" onclick="deleteContractFile(${c.id},${i})">حذف</button>
+          </div>`;
         });
       }
 
-      // === RENDER ALL ===
-      function renderContracts(){
-        const visibleContracts = getVisibleContracts();
-        const tbody=document.getElementById('contracts');
-        if(!tbody) return;
-        tbody.innerHTML='';
-        visibleContracts.forEach(c=>{
-          const delivered = c.deliveries.reduce((a,b)=>a+b.qty,0);
-          const p = c.count ? Math.min(100, Math.round(delivered/c.count*100)) : 0;
-          const debtR = c.assignR - c.commitR;
-          const debtD = c.assignD - c.commitD;
+      contracts.innerHTML+=`<tr>
+        <td>${c.name}</td>
+        <td>${c.mg}</td>
+        <td>${p}%<div class="progress"><span style="width:${p}%"></span></div></td>
+        <td>${formatNumber(debtR,'rial')}<br>${formatNumber(debtD,'usd')}</td>
+        <td>${fileLinks}</td>
+        <td>
+          <button onclick="editContract(${c.id})">ویرایش</button>
+          <button class="red" onclick="deleteContract(${c.id})">حذف</button>
+          <button onclick="openDelivery(${c.id})">تحویل</button>
+          <button onclick="openDesc(${c.id})">توضیحات</button>
+          <button onclick="openDetail(${c.id})">جزئیات</button>
+        </td>
+      </tr>`;
+    });
+    
+  }
 
-          let fileLinks = '---';
-          if(c.files?.length){
-            fileLinks='';
-            c.files.forEach((f,i)=>{
-              fileLinks+=`<div>
-                <a href="${f.data}" download="${f.name}">${f.name}</a>
-                <button class="red" onclick="deleteContractFile(${c.id},${i})">حذف</button>
-              </div>`;
-            });
-          }
+  function renderDashboard(){
+    dashboard.innerHTML='';
+    const contracts=getVisibleContracts();
+    g('managements').forEach(m=>{
+      const cs=contracts.filter(c=>c.mg===m.name);
+      if(!cs.length) return;
+      dashboard.innerHTML+=`<div class="stat"><h3>${m.name}</h3><h2>${cs.length}</h2> قرارداد</div>`;
+    });
+  }
 
-          tbody.innerHTML+=`<tr>
-            <td>${c.name}</td>
-            <td>${c.mg}</td>
-            <td>${p}%<div class="progress"><span style="width:${p}%"></span></div></td>
-            <td>${debtR.toLocaleString()} ریال<br>${debtD.toLocaleString()} $</td>
-            <td>${fileLinks}</td>
-            <td>
-              <button onclick="editContract(${c.id})">ویرایش</button>
-              <button class="red" onclick="deleteContract(${c.id})">حذف</button>
-              <button onclick="openDelivery(${c.id})">تحویل</button>
-              <button onclick="openDesc(${c.id})">توضیحات</button>
-              <button onclick="openDetail(${c.id})">جزئیات</button>
-            </td>
-          </tr>`;
-        });
-      }
+  function renderFinanceDashboard(){
+  const canvas = document.getElementById('financeChart');
+  if(!canvas) return;
+  const ctx = canvas.getContext('2d');
 
-      function renderAll(){
-        // مدیریت‌ها
-        const mgList=document.getElementById('mgList');
-        if(mgList){
-          mgList.innerHTML='';
-          g('managements').forEach(m=>{
-            mgList.innerHTML+=`<li><i class="bi bi-building"></i> ${m.name} <button class="red" onclick="deleteManagement(${m.id})"><i class="bi bi-trash"></i></button></li>`;
-          });
-        }
-        // مدیریت‌ها در select
-        ['cMg','uMg','profileMg','eMg'].forEach(id=>{
-          const el=document.getElementById(id);
-          if(el){
-            el.innerHTML='';
-            g('managements').forEach(m=>{
-              el.innerHTML+=`<option>${m.name}</option>`;
-            });
-          }
-        });
-        // کاربران
-        const editUserSelect=document.getElementById('editUser');
-        if(editUserSelect){
-          editUserSelect.innerHTML='';
-          g('users').forEach(u=>{ editUserSelect.innerHTML+=`<option value="${u.id}">${u.username}</option>`; });
-        }
+  const contracts = getVisibleContracts();
+  const labels = g('managements').map(m=>m.name);
 
-        renderContracts();
-        renderDashboard();
-        renderFinanceDashboard();
-      }
+  const dataRial = labels.map(l =>
+    contracts.filter(c=>c.mg===l).reduce((a,b)=>a+b.totalR,0)
+  );
+  const dataUSD = labels.map(l =>
+    contracts.filter(c=>c.mg===l).reduce((a,b)=>a+b.totalD,0)
+  );
 
-      function showToast(msg,color="#22c55e"){
-        const t=document.getElementById('toast');
-        t.innerText=msg;
-        t.style.background=color;
-        t.style.display='block';
-        setTimeout(()=>t.style.display='none',3000);
-      }
+  // ✅ destroy امن
+  if(window.financeChart && typeof window.financeChart.destroy === "function"){
+    window.financeChart.destroy();
+  }
 
-      // === DASHBOARD ===
-      function renderDashboard(){
-        const dash=document.getElementById('dashboard');
-        if(!dash) return;
-        dash.innerHTML='';
-        g('managements').forEach(m=>{
-          const cs=getVisibleContracts().filter(c=>c.mg===m.name);
-          if(cs.length>0) dash.innerHTML+=`<div class="stat"><h3>${m.name}</h3><h2>${cs.length}</h2> قرارداد</div>`;
-        });
-      }
+  window.financeChart = new Chart(ctx,{
+    type:'bar',
+    data:{
+      labels,
+      datasets:[
+        {label:'مبلغ کل (ریال)', data:dataRial},
+        {label:'مبلغ کل (دلار)', data:dataUSD}
+      ]
+    },
+    options:{responsive:true}
+  });
+}
 
-      function renderFinanceDashboard(){
-        const canvas=document.getElementById('financeChart');
-        if(!canvas) return;
-        const ctx=canvas.getContext('2d');
-        const labels=g('managements').map(m=>m.name);
-        const contracts=getVisibleContracts();
 
-        const dataR = labels.map(l=>contracts.filter(c=>c.mg===l).reduce((a,b)=>a+b.totalR,0));
-        const dataD = labels.map(l=>contracts.filter(c=>c.mg===l).reduce((a,b)=>a+b.totalD,0));
+  // === SEARCH ===
+  function searchContracts(){
+  searchResult.innerHTML='';
+  const text = sText.value.trim();
+  if(!text) return;
 
-        if(window.financeChart && typeof window.financeChart.destroy==='function') window.financeChart.destroy();
+  getVisibleContracts().filter(c=>{
+    return Object.values(c).some(v=>String(v).includes(text));
+  }).forEach(c=>{
+    const delivered = c.deliveries.reduce((a,b)=>a+b.qty,0);
+    const p = c.count ? Math.min(100, Math.round(delivered/c.count*100)) : 0;
+    const progressRatio = c.count ? delivered / c.count : 0;
+    const paidR = Math.round(c.commitR * progressRatio);
+    const paidD = Math.round(c.commitD * progressRatio);
+    const debtR = c.assignR - paidR;
+    const debtD = c.assignD - paidD;
 
-        window.financeChart = new Chart(ctx,{
-          type:'bar',
-          data:{labels,datasets:[{label:'ریال',data:dataR},{label:'دلار',data:dataD}]},
-          options:{responsive:true}
-        });
-      }
-    </script>
+    searchResult.innerHTML+=`<tr>
+      <td>${c.name}</td>
+      <td>${c.mg}</td>
+      <td>${p}%</td>
+      <td>${formatNumber(debtR,'rial')}<br>${formatNumber(debtD,'usd')}</td>
+      <td>
+        <button onclick="editContract(${c.id})">ویرایش</button>
+        <button class="red" onclick="deleteContract(${c.id})">حذف</button>
+        <button onclick="openDelivery(${c.id})">تحویل</button>
+        <button onclick="openDesc(${c.id})">توضیحات</button>
+        <button onclick="openDetail(${c.id})">جزئیات</button>
+      </td>
+    </tr>`;
+  });
+}
+
+  // === RENDER ALL ===
+  function renderEditMg(){ eMg.innerHTML=''; g('managements').forEach(m=>{ eMg.innerHTML+=`<option>${m.name}</option>`; }) }
+  function renderAll(){
+    mgList.innerHTML=''; g('managements').forEach(m=>{ mgList.innerHTML+=`<li><i class="bi bi-building"></i> ${m.name} <button class="red" onclick="deleteManagement(${m.id})"><i class="bi bi-trash"></i></button></li>`; });
+    cMg.innerHTML=uMg.innerHTML=''; g('managements').forEach(m=>{ cMg.innerHTML+=`<option>${m.name}</option>`; uMg.innerHTML+=`<option>${m.name}</option>`; });
+    editUser.innerHTML=''; g('users').forEach(u=>{ editUser.innerHTML+=`<option value="${u.id}">${u.username}</option>`; });
+    renderContracts(); renderDashboard(); renderFinanceDashboard();
+  }
+function updateUserInfo() {
+  if(!currentUser) return;
+
+  userInfo.innerText = currentUser.username;
+  userAvatar.src = currentUser.avatar || "https://via.placeholder.com/32";
+  userAvatar.style.display = "block"; // بعد ورود نشان بده
+}
+
+
+
+
+
+  // === CLOSE MODALS ON BACKGROUND CLICK ===
+  deliveryModal.addEventListener('click', e=>{ if(e.target===deliveryModal) closeDelivery(); });
+  editContractModal.addEventListener('click', e=>{ if(e.target===editContractModal) closeEditContract(); });
+
+  // === EXPORT TO EXCEL ===
+  function exportContractsExcel(){
+    const contractsData = getVisibleContracts().map(c=>{
+      const delivered = c.deliveries.reduce((a,b)=>a+b.qty,0);
+      const progress = c.count ? Math.min(100, Math.round(delivered/c.count*100)) : 0;
+      const filesList = c.files && c.files.length ? c.files.map(f=>f.name).join(", ") : "";
+      return {
+        "نام قرارداد": c.name,
+        "شماره قرارداد": c.number,
+        "صنایع": c.industries,
+        "گروه": c.group,
+        "صنعت": c.industry,
+        "مدیریت": c.mg,
+        "مبلغ کل (ریال)": c.totalR,
+        "مبلغ کل (دلار)": c.totalD,
+        "مبلغ واگذاری (ریال)": c.assignR,
+        "مبلغ واگذاری (دلار)": c.assignD,
+        "تعهد صنعت (ریال)": c.commitR,
+        "تعهد صنعت (دلار)": c.commitD,
+        "تعداد محصول": c.count,
+        "تعداد تحویل شده": delivered,
+        "درصد پیشرفت": progress+"%",
+        "فایل‌های پیوست": filesList
+      };
+    });
+    const worksheet = XLSX.utils.json_to_sheet(contractsData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "قراردادها");
+    XLSX.writeFile(workbook, "Contracts.xlsx");
+  }
+
+  // === TOAST & UTIL ===
+  function showToast(message,color="#22c55e"){
+    const t=document.getElementById('toast');
+    t.innerText=message;
+    t.style.background=color;
+    t.style.display='block';
+    setTimeout(()=>t.style.display='none',3000);
+  }
+  function formatNumber(value,type){
+    if(type==='rial') return value.toLocaleString()+' ریال';
+    if(type==='usd') return '$'+value.toLocaleString();
+    return value;
+  }
+
+
+  let descContractId = null;
+
+  function openDesc(id){
+  const c = g('contracts').find(x=>x.id===id);
+  descContractId = id;
+  document.getElementById("descText").value = c.description || "";
+  document.getElementById("descModal").classList.add("show");
+}
+
+function closeDesc(){
+  document.getElementById("descModal").classList.remove("show");
+}
+
+function saveDesc(){
+  const list = g('contracts');
+  list.find(c=>c.id===descContractId).description =
+    document.getElementById("descText").value;
+  s('contracts', list);
+  closeDesc();
+  showToast("توضیحات ذخیره شد");
+}
+
+function openDetail(id){
+  const c=g('contracts').find(x=>x.id===id);
+  const content = document.getElementById("detailContent");
+
+  content.innerHTML = `
+  <b>نام:</b> ${c.name}<br>
+  <b>شماره:</b> ${c.number}<br>
+  <b>صنایع:</b> ${c.industries}<br>
+  <b>گروه:</b> ${c.group}<br>
+  <b>صنعت:</b> ${c.industry}<br>
+  <b>مدیریت:</b> ${c.mg}<br>
+  <b>مبلغ کل ریال:</b> ${c.totalR.toLocaleString()}<br>
+  <b>مبلغ کل دلار:</b> ${c.totalD.toLocaleString()}<br>
+  <b>واگذاری ریال:</b> ${c.assignR.toLocaleString()}<br>
+  <b>واگذاری دلار:</b> ${c.assignD.toLocaleString()}<br>
+  <b>تعهد ریال:</b> ${c.commitR.toLocaleString()}<br>
+  <b>تعهد دلار:</b> ${c.commitD.toLocaleString()}<br>
+  <b>تعداد محصول:</b> ${c.count}<br>
+  <b>توضیحات:</b><br>${c.description||''}
+  `;
+  document.getElementById("detailModal").classList.add("show");
+}
+
+function closeDetail(){
+  document.getElementById("detailModal").classList.remove("show");
+}
+
+console.log("search ok");
+
+document.addEventListener("DOMContentLoaded", renderAll);
+
+// ================= PROFILE SYSTEM =================
+const profileAvatarInput = document.getElementById('profileAvatar');
+const profileAvatarPreview = document.getElementById('profileAvatarPreview');
+
+profileAvatarInput.addEventListener('change', function(){
+  const file = this.files[0];
+  if(!file) return;
+
+  // ✅ بررسی فرمت فایل
+  const allowedTypes = ['image/jpeg','image/jpg','image/png','image/webp'];
+  if(!allowedTypes.includes(file.type)){
+    alert('فرمت عکس نامناسب است. لطفاً jpg, png یا webp آپلود کنید.');
+    this.value = ''; // فایل را پاک کن
+    return;
+  }
+
+  // ✅ بررسی حجم فایل (500 کیلوبایت)
+  const maxSizeKB = 500;
+  if(file.size > maxSizeKB * 1024){
+    alert('حجم عکس بیش از 500 کیلوبایت است. لطفاً عکس کوچک‌تر انتخاب کنید.');
+    this.value = '';
+    return;
+  }
+
+  // ✅ نمایش پیش‌نمایش
+  const reader = new FileReader();
+  reader.onload = e => profileAvatarPreview.src = e.target.result;
+  reader.readAsDataURL(file);
+});
+
+
+// open modal
+function openProfileModal() {
+  if(!currentUser) return alert("ابتدا وارد شوید");
+
+  profileUsername.value = currentUser.username;
+  profilePassword.value = "";
+  profileAvatarPreview.src = currentUser.avatar || "";
+
+  profileModal.classList.add("show");
+}
+
+// close modal
+function closeProfileModal(){
+  profileModal.classList.remove("show");
+}
+
+// save profile
+function saveProfile() {
+  const password = profilePassword.value.trim();
+  const passwordConfirm = profilePasswordConfirm.value.trim();
+
+  // اگر یکی از فیلدها پر نشده باشد، اجازه نده
+  if(password && password !== passwordConfirm){
+    return alert("رمز عبور و تکرار آن یکسان نیست!");
+  }
+
+  const users = g('users');
+  const u = users.find(x => x.id === currentUser.id);
+  if(!u) return alert("کاربر پیدا نشد");
+
+  if(password) u.password = password;
+  if(profileAvatarPreview.src) u.avatar = profileAvatarPreview.src;
+
+  s('users', users);
+  localStorage.currentUser = JSON.stringify(u);
+  currentUser = u;
+
+  updateUserInfo();
+  showToast("پروفایل ذخیره شد");
+  closeProfileModal();
+}
+
+
+
+</script>
+
+<div id="toast" style="position:fixed;bottom:20px;right:20px;background:#22c55e;color:#fff;padding:15px 20px;border-radius:10px;display:none;z-index:2000;"></div>
+<div id="descModal" class="modal">
+  <div class="card">
+    <button class="modal-close" onclick="closeDesc()">×</button>
+    <h3>توضیحات قرارداد</h3>
+    <textarea id="descText" style="width:100%;height:150px"></textarea>
+    <button onclick="saveDesc()">ذخیره</button>
+  </div>
+</div>
+<div id="detailModal" class="modal">
+  <div class="card">
+    <button class="modal-close" onclick="closeDetail()">×</button>
+    <h3>جزئیات قرارداد</h3>
+    <div id="detailContent"></div>
+  </div>
+</div>
+
+
   </body>
 </html>
