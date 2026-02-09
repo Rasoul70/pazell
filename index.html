@@ -6,6 +6,15 @@
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<!-- Firebase App (core SDK) -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<!-- Firebase Firestore -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<!-- Firebase Auth -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<!-- Firebase Storage -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:tahoma;background:linear-gradient(135deg,#f1f5f9,#e2e8f0);}
@@ -350,21 +359,28 @@ header {
    
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
-  // === INIT DATA ===
-  if(!localStorage.init){
-    localStorage.init = 1;
-    localStorage.managements = JSON.stringify([{id:1,name:'مرکزی'}]);
-    localStorage.users = JSON.stringify([{id:1,username:'admin',password:'1234',role:'admin'}]);
-    localStorage.contracts = JSON.stringify([]);
-  }
+  // ================== FIREBASE INIT ==================
+const firebaseConfig = {
+  apiKey: "AIzaSyB9GPuMyCwXo2rGePnM81Q6Jq15fqAqsGE",
+  authDomain: "samaneh-b014f.firebaseapp.com",
+  projectId: "samaneh-b014f",
+  storageBucket: "samaneh-b014f.appspot.com",
+  messagingSenderId: "374809287505",
+  appId: "1:374809287505:web:1bf8ecefca61aab3ed5170",
+  measurementId: "G-88DWZ6181H"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const storage = firebase.storage();
+const auth = firebase.auth();
 
-  const g = k => JSON.parse(localStorage[k]||'[]');
-  const s = (k,v) => localStorage[k] = JSON.stringify(v);
+// ================== GLOBAL ==================
+let currentUser = null;
+let editId = null;
+let currentContractId = null;
 
-  let editId = null, currentContractId = null, currentUser = null;
-
-  // === LOGIN / LOGOUT ===
-  function login(){
+// ================== LOGIN / LOGOUT ==================
+async function login() {
   const uVal = document.getElementById("username").value.trim();
   const pVal = document.getElementById("password").value.trim();
 
@@ -373,469 +389,375 @@ header {
     return;
   }
 
-  const u = g('users').find(x => x.username === uVal && x.password === pVal);
-  if(!u){
+  try {
+    // ورود با ایمیل و رمز
+    const userCredential = await auth.signInWithEmailAndPassword(uVal, pVal);
+    currentUser = {username: uVal, uid: userCredential.user.uid};
+    
+    document.getElementById('loginContainer').style.display = 'none';
+    document.getElementById('app').classList.remove('hidden');
+    document.querySelector('.sidebar').classList.remove('hidden');
+
+    userInfo.innerText = currentUser.username;
+    renderAll();
+  } catch(e){
     document.getElementById("loginError").innerText = "نام کاربری یا رمز عبور اشتباه است";
-    return;
   }
-
-  // ورود موفق
-  currentUser = u;
-  localStorage.currentUser = JSON.stringify(u);
-
-  // مخفی کردن فرم ورود و نمایش اپلیکیشن
-  document.getElementById('loginContainer').style.display = 'none';
-  document.getElementById('app').classList.remove('hidden');
-  document.querySelector('.sidebar').classList.remove('hidden');
-
-  userInfo.innerText = u.username;
-  if(u.role !== 'admin' && u.role !== 'supermanager') btnAdmin.style.display='none';
-  userAvatar.style.display = "inline-block";
-
-  renderAll();
-  updateUserInfo();
 }
 
+function logout(){
+  auth.signOut();
+  location.reload();
+}
 
-  function logout(){
-    userAvatar.style.display = "none";
-        location.reload(); }
-
-  // === OPEN SECTIONS ===
-  function openSection(section){
+// ================== OPEN SECTIONS ==================
+function openSection(section){
   ['admin','contract','list','dashboard','search','finance'].forEach(s=>{
     const el = document.getElementById('sec-'+s);
     if(!el) return;
-
     el.classList.add('hidden');
-
-    if(s === section){
-      el.classList.remove('hidden');
+    if(s === section) el.classList.remove('hidden');
+    if(s==='admin' && (!currentUser || !currentUser.role || !['admin','supermanager'].includes(currentUser.role))){
+      el.classList.add('hidden');
     }
+  });
+}
+// ================== MANAGEMENT & USERS ==================
+async function addManagement(){
+  if(!currentUser || currentUser.role !== 'admin') return alert('فقط ادمین اجازه دارد');
+  const name = mgName.value.trim();
+  if(!name) return;
 
-    if(s==='admin' && !['admin','supermanager'].includes(currentUser.role)){
-  el.classList.add('hidden');
+  await db.collection('managements').add({ name });
+  mgName.value = '';
+  renderAll();
 }
 
+async function deleteManagement(id){
+  if(!currentUser || currentUser.role !== 'admin') return alert('فقط ادمین اجازه دارد');
+
+  // بررسی اینکه این مدیریت دارای قرارداد هست یا نه
+  const contractsSnapshot = await db.collection('contracts').where('mgId','==',id).get();
+  if(!contractsSnapshot.empty) return alert('این مدیریت دارای قرارداد است');
+
+  await db.collection('managements').doc(id).delete();
+  renderAll();
+}
+
+async function addUser(){
+  if(!currentUser || currentUser.role !== 'admin') return alert('فقط ادمین اجازه دارد');
+  const username = uName.value.trim();
+  const password = uPass.value.trim();
+  const role = uRole.value;
+  const mg = uMg.value;
+
+  if(!username || !password) return alert("نام کاربری و رمز وارد شود");
+
+  // ایجاد کاربر در Firebase Auth
+  const userCredential = await auth.createUserWithEmailAndPassword(username, password);
+  const uid = userCredential.user.uid;
+
+  // ذخیره اطلاعات اضافی در Firestore
+  await db.collection('users').doc(uid).set({
+    username,
+    role,
+    mg
+  });
+
+  renderAll();
+}
+
+async function changePassword(){
+  const userId = editUser.value;
+  const newPass = newPass.value.trim();
+  if(!newPass) return alert("رمز جدید وارد کنید");
+
+  // تغییر رمز در Firebase Auth
+  const userDoc = await db.collection('users').doc(userId).get();
+  if(!userDoc.exists) return alert("کاربر پیدا نشد");
+
+  // ⚠️ نکته: تغییر مستقیم رمز در Auth باید با کاربر انجام شود یا Admin SDK
+  alert("برای تغییر رمز، کاربر باید دوباره وارد شود یا Admin SDK استفاده شود.");
+}
+
+async function deleteUser(){
+  const userId = editUser.value;
+  if(!userId) return;
+  await db.collection('users').doc(userId).delete();
+  renderAll();
+}
+
+// ================== CONTRACT HELPERS ==================
+async function collectContractInputs(inputFiles){
+  const files = [];
+  for(const f of inputFiles.files){
+    const fileRef = storage.ref().child(`contracts/${Date.now()}_${f.name}`);
+    await fileRef.put(f);
+    const url = await fileRef.getDownloadURL();
+    files.push({name: f.name, url});
+  }
+
+  return {
+    name: cName.value,
+    number: cNumber.value,
+    industries: cIndustries.value,
+    group: cGroup.value,
+    industry: cIndustry.value,
+    mg: cMg.value,
+    mgId: cMg.selectedOptions[0]?.dataset.id || null,
+    totalR: +cTotalR.value || 0,
+    totalD: +cTotalD.value || 0,
+    assignR: +cAssignR.value || 0,
+    assignD: +cAssignD.value || 0,
+    commitR: +cCommitR.value || 0,
+    commitD: +cCommitD.value || 0,
+    count: +cCount.value || 0,
+    files
+  };
+}
+
+// ================== CONTRACT CRUD ==================
+async function saveContract(){
+  const data = await collectContractInputs(cFiles);
+
+  // محدودیت دسترسی
+  if(currentUser.role !== 'admin' && data.mg !== currentUser.mg) return alert('فقط برای مدیریت خود می‌توانید ثبت کنید');
+
+  if(editId){
+    await db.collection('contracts').doc(editId).update(data);
+    editId = null;
+    showToast('ویرایش قرارداد با موفقیت انجام شد');
+  } else {
+    await db.collection('contracts').add({...data, deliveries: [], description: ""});
+    showToast('قرارداد با موفقیت ثبت شد');
+  }
+
+  cFiles.value = '';
+  renderAll();
+}
+// ================== CONTRACT LIST ==================
+async function renderContracts(){
+  const snapshot = await db.collection('contracts').get();
+  const allContracts = snapshot.docs.map(d=>({id: d.id, ...d.data()}));
+
+  const visibleContracts = currentUser.role==='admin' || currentUser.role==='supermanager'
+    ? allContracts
+    : allContracts.filter(c=>c.mg === currentUser.mg);
+
+  contracts.innerHTML = '';
+  visibleContracts.forEach(c=>{
+    const delivered = c.deliveries?.reduce((a,b)=>a+b.qty,0) || 0;
+    const progress = c.count ? Math.min(100, Math.round(delivered / c.count * 100)) : 0;
+
+    let fileLinks = '---';
+    if(c.files?.length){
+      fileLinks = c.files.map((f,i)=>`
+        <div>
+          <a href="${f.url}" target="_blank">${f.name}</a>
+          <button class="red" onclick="deleteContractFile('${c.id}',${i})">حذف</button>
+        </div>`).join('');
+    }
+
+    contracts.innerHTML += `
+      <tr>
+        <td>${c.name}</td>
+        <td>${c.mg}</td>
+        <td>${progress}%<div class="progress"><span style="width:${progress}%"></span></div></td>
+        <td>${formatNumber(c.assignR - c.commitR,'rial')}<br>${formatNumber(c.assignD - c.commitD,'usd')}</td>
+        <td>${fileLinks}</td>
+        <td>
+          <button onclick="editContract('${c.id}')">ویرایش</button>
+          <button class="red" onclick="deleteContract('${c.id}')">حذف</button>
+          <button onclick="openDelivery('${c.id}')">تحویل</button>
+          <button onclick="openDesc('${c.id}')">توضیحات</button>
+          <button onclick="openDetail('${c.id}')">جزئیات</button>
+        </td>
+      </tr>
+    `;
   });
 }
 
-  // === MANAGEMENT & USERS ===
-  function addManagement(){
-    if(currentUser.role!=='admin') return alert('فقط ادمین اجازه دارد');
-    const m = g('managements'); 
-    m.push({id:Date.now(),name:mgName.value});
-    s('managements',m);
-    mgName.value='';
-    renderAll();
-  }
-
-  function deleteManagement(id){
-    if(currentUser.role!=='admin') return alert('فقط ادمین اجازه دارد');
-    if(g('contracts').some(c=>c.mg===g('managements').find(m=>m.id===id)?.name)) return alert('این مدیریت دارای قرارداد است');
-    s('managements',g('managements').filter(m=>m.id!==id));
-    renderAll();
-  }
-
-  function addUser(){
-    if(currentUser.role!=='admin') return alert('فقط ادمین اجازه دارد');
-    const u = g('users');
-    u.push({id:Date.now(),username:uName.value,password:uPass.value,role:uRole.value,mg:uMg.value});
-    s('users',u);
-    renderAll();
-  }
-
-  function changePassword(){
-    const u = g('users');
-    u.find(x=>x.id==editUser.value).password=newPass.value;
-    s('users',u);
-    alert('رمز عبور تغییر یافت');
-  }
-
-  function deleteUser(){
-    s('users',g('users').filter(x=>x.id!=editUser.value));
-    renderAll();
-  }
-
-  // === CONTRACT HELPERS ===
-  function getVisibleContracts(){
-  const all = g('contracts');
-  if(!currentUser) return [];
-  if(currentUser.role==='admin' || currentUser.role==='supermanager') return all;
-  return all.filter(c=>c.mg===currentUser.mg);
+// ================== DELIVERY ==================
+async function openDelivery(contractId){
+  currentContractId = contractId;
+  const contractDoc = await db.collection('contracts').doc(contractId).get();
+  currentContract = {id: contractDoc.id, ...contractDoc.data()};
+  deliveryModal.classList.add('show');
+  document.body.style.overflow = 'hidden';
+  renderDeliveries();
 }
 
-  function readFiles(input){
-    return new Promise(resolve=>{
-      const files=[];
-      if(!input.files.length) return resolve(files);
-      let count=0;
-      [...input.files].forEach(f=>{
-        const r = new FileReader();
-        r.onload = e=>{ files.push({name:f.name,data:e.target.result}); if(++count===input.files.length) resolve(files); }
-        r.readAsDataURL(f);
-      });
-    });
-  }
+async function saveDelivery(){
+  const delivery = {
+    id: Date.now(),
+    date: dDate.value,
+    qty: +dQty.value,
+    place: dPlace.value,
+    status: dStatus.value
+  };
 
-  async function collectContractInputs(inputFiles){
-    const files = await readFiles(inputFiles);
-    return {
-      name:cName.value,
-      number:cNumber.value,
-      industries:cIndustries.value,
-      group:cGroup.value,
-      industry:cIndustry.value,
-      mg:cMg.value,
-      totalR:+cTotalR.value||0,
-      totalD:+cTotalD.value||0,
-      assignR:+cAssignR.value||0,
-      assignD:+cAssignD.value||0,
-      commitR:+cCommitR.value||0,
-      commitD:+cCommitD.value||0,
-      count:+cCount.value||0,
-      description: "",
-      files
-    };
-  }
+  currentContract.deliveries = currentContract.deliveries || [];
+  currentContract.deliveries.push(delivery);
 
-  // === CONTRACT CRUD ===
-  async function saveContract(){
-    const list = g('contracts');
-    const data = await collectContractInputs(cFiles);
-    if(currentUser.role!=='admin' && data.mg!==currentUser.mg) return alert('فقط برای مدیریت خود می‌توانید ثبت کنید');
+  await db.collection('contracts').doc(currentContract.id).update({ deliveries: currentContract.deliveries });
+  renderDeliveries();
+  renderContracts();
+  closeDelivery();
+}
 
-    if(editId){
-      Object.assign(list.find(x=>x.id===editId), data);
-      editId=null;
-      showToast('ویرایش قرارداد با موفقیت انجام شد');
-    } else {
-      list.push({id:Date.now(), deliveries:[], description:"", ...data});
-      showToast('قرارداد با موفقیت ثبت شد');
-    }
+async function deleteDelivery(deliveryId){
+  currentContract.deliveries = currentContract.deliveries.filter(d=>d.id !== deliveryId);
+  await db.collection('contracts').doc(currentContract.id).update({ deliveries: currentContract.deliveries });
+  renderDeliveries();
+  renderContracts();
+}
 
-    s('contracts', list);
-    cFiles.value='';
-    renderAll();
-  }
-
-  function editContract(id){
-    const c = g('contracts').find(x=>x.id===id);
-    if(currentUser.role!=='admin' && c.mg!==currentUser.mg) return alert('دسترسی ندارید');
-    editId=id;
-    eName.value=c.name; eNumber.value=c.number; eIndustries.value=c.industries;
-    eGroup.value=c.group; eIndustry.value=c.industry; eMg.value=c.mg;
-    eTotalR.value=c.totalR; eTotalD.value=c.totalD; eAssignR.value=c.assignR; eAssignD.value=c.assignD;
-    eCommitR.value=c.commitR; eCommitD.value=c.commitD; eCount.value=c.count;
-    editContractModal.classList.add('show'); document.body.style.overflow='hidden'; renderEditMg();
-  }
-
-  async function saveEditedContract(){
-    if(!editId) return alert('هیچ قراردادی برای ویرایش انتخاب نشده');
-    const list = g('contracts');
-    const c = list.find(x=>x.id===editId);
-    if(!c) return alert('قرارداد پیدا نشد');
-
-    const newFiles = await readFiles(eFiles);
-    if(!c.files) c.files=[];
-    c.files.push(...newFiles);
-
-    c.name=eName.value; c.number=eNumber.value; c.industries=eIndustries.value;
-    c.group=eGroup.value; c.industry=eIndustry.value; c.mg=eMg.value;
-    c.totalR=+eTotalR.value||0; c.totalD=+eTotalD.value||0;
-    c.assignR=+eAssignR.value||0; c.assignD=+eAssignD.value||0;
-    c.commitR=+eCommitR.value||0; c.commitD=+eCommitD.value||0;
-    c.count=+eCount.value||0;
-
-    s('contracts', list);
-    eFiles.value='';
-    closeEditContract();
-    renderAll();
-    showToast('ویرایش قرارداد با موفقیت انجام شد');
-  }
-
-  function closeEditContract(){ editContractModal.classList.remove('show'); document.body.style.overflow=''; }
-  function deleteContract(id){
-    const list=g('contracts'); const c=list.find(x=>x.id===id);
-    if(currentUser.role!=='admin' && c.mg!==currentUser.mg) return alert('دسترسی ندارید');
-    if(confirm('حذف قرارداد؟')){s('contracts',list.filter(x=>x.id!==id)); renderAll();}
-  }
-
-  function deleteContractFile(contractId,index){
-    const list=g('contracts'); const c=list.find(x=>x.id===contractId);
-    if(currentUser.role!=='admin' && c.mg!==currentUser.mg) return alert('دسترسی ندارید');
-    if(confirm(`حذف فایل ${c.files[index].name}؟`)){c.files.splice(index,1); s('contracts',list); renderContracts();}
-  }
-
-  // === DELIVERY ===
-  function openDelivery(id){
-    const c=g('contracts').find(x=>x.id===id);
-    if(currentUser.role!=='admin' && c.mg!==currentUser.mg) return alert('دسترسی ندارید');
-    currentContractId=id; deliveryModal.classList.add('show'); document.body.style.overflow='hidden'; renderDeliveries();
-  }
-
-  function closeDelivery(){ deliveryModal.classList.remove('show'); document.body.style.overflow=''; }
-  function saveDelivery(){
-    const list=g('contracts'); const c=list.find(x=>x.id===currentContractId);
-    c.deliveries.push({id:Date.now(),date:dDate.value,qty:+dQty.value,place:dPlace.value,status:dStatus.value});
-    s('contracts',list); renderDeliveries(); renderContracts(); closeDelivery();
-  }
-  function deleteDelivery(id){
-    const list=g('contracts'); const c=list.find(x=>x.id===currentContractId);
-    c.deliveries=c.deliveries.filter(d=>d.id!==id); s('contracts',list); renderDeliveries(); renderContracts();
-  }
-
-  function renderDeliveries(){
-    const c=g('contracts').find(x=>x.id===currentContractId);
-    deliveryList.innerHTML='';
-    c.deliveries.forEach(d=>{
-      deliveryList.innerHTML+=`<tr>
-        <td>${d.date}</td><td>${d.qty}</td><td>${d.place}</td><td>${d.status}</td>
+function renderDeliveries(){
+  deliveryList.innerHTML = '';
+  (currentContract.deliveries || []).forEach(d=>{
+    deliveryList.innerHTML += `
+      <tr>
+        <td>${d.date}</td>
+        <td>${d.qty}</td>
+        <td>${d.place}</td>
+        <td>${d.status}</td>
         <td><button class="red" onclick="deleteDelivery(${d.id})"><i class="bi bi-trash"></i></button></td>
       </tr>`;
-    });
-  }
+  });
+}
 
-  // === RENDER CONTRACTS & DASHBOARD ===
-  function renderContracts(){
-    const visibleContracts = getVisibleContracts();
-    contracts.innerHTML = '';
-    visibleContracts.forEach(c=>{
-      const delivered = c.deliveries.reduce((a,b)=>a+b.qty,0);
-      const p = c.count ? Math.min(100, Math.round(delivered/c.count*100)) : 0;
-      const debtR = c.assignR - c.commitR;
-      const debtD = c.assignD - c.commitD;
+// ================== DASHBOARD ==================
+async function renderDashboard(){
+  dashboard.innerHTML = '';
+  const mgSnapshot = await db.collection('managements').get();
+  const mgList = mgSnapshot.docs.map(d=>({id: d.id, ...d.data()}));
+  const contractSnapshot = await db.collection('contracts').get();
+  const allContracts = contractSnapshot.docs.map(d=>({id:d.id, ...d.data()}));
 
-      let fileLinks = '---';
-      if(c.files?.length){
-        fileLinks='';
-        c.files.forEach((f,i)=>{
-          fileLinks+=`<div>
-            <a href="${f.data}" download="${f.name}">${f.name}</a>
-            <button class="red" onclick="deleteContractFile(${c.id},${i})">حذف</button>
-          </div>`;
-        });
-      }
+  mgList.forEach(m=>{
+    const cs = allContracts.filter(c=>c.mg === m.name);
+    if(!cs.length) return;
+    dashboard.innerHTML += `<div class="stat"><h3>${m.name}</h3><h2>${cs.length}</h2> قرارداد</div>`;
+  });
+}
 
-      contracts.innerHTML+=`<tr>
-        <td>${c.name}</td>
-        <td>${c.mg}</td>
-        <td>${p}%<div class="progress"><span style="width:${p}%"></span></div></td>
-        <td>${formatNumber(debtR,'rial')}<br>${formatNumber(debtD,'usd')}</td>
-        <td>${fileLinks}</td>
-        <td>
-          <button onclick="editContract(${c.id})">ویرایش</button>
-          <button class="red" onclick="deleteContract(${c.id})">حذف</button>
-          <button onclick="openDelivery(${c.id})">تحویل</button>
-          <button onclick="openDesc(${c.id})">توضیحات</button>
-          <button onclick="openDetail(${c.id})">جزئیات</button>
-        </td>
-      </tr>`;
-    });
-    
-  }
+// ================== FINANCE DASHBOARD ==================
+async function renderFinanceDashboard(){
+  const ctx = document.getElementById('financeChart').getContext('2d');
+  const contractsSnapshot = await db.collection('contracts').get();
+  const allContracts = contractsSnapshot.docs.map(d=>d.data());
+  const mgSnapshot = await db.collection('managements').get();
+  const labels = mgSnapshot.docs.map(d=>d.data().name);
 
-  function renderDashboard(){
-    dashboard.innerHTML='';
-    const contracts=getVisibleContracts();
-    g('managements').forEach(m=>{
-      const cs=contracts.filter(c=>c.mg===m.name);
-      if(!cs.length) return;
-      dashboard.innerHTML+=`<div class="stat"><h3>${m.name}</h3><h2>${cs.length}</h2> قرارداد</div>`;
-    });
-  }
+  const dataRial = labels.map(l => allContracts.filter(c=>c.mg===l).reduce((a,b)=>a+b.totalR,0));
+  const dataUSD = labels.map(l => allContracts.filter(c=>c.mg===l).reduce((a,b)=>a+b.totalD,0));
 
-  function renderFinanceDashboard(){
-  const canvas = document.getElementById('financeChart');
-  if(!canvas) return;
-  const ctx = canvas.getContext('2d');
-
-  const contracts = getVisibleContracts();
-  const labels = g('managements').map(m=>m.name);
-
-  const dataRial = labels.map(l =>
-    contracts.filter(c=>c.mg===l).reduce((a,b)=>a+b.totalR,0)
-  );
-  const dataUSD = labels.map(l =>
-    contracts.filter(c=>c.mg===l).reduce((a,b)=>a+b.totalD,0)
-  );
-
-  // ✅ destroy امن
   if(window.financeChart && typeof window.financeChart.destroy === "function"){
     window.financeChart.destroy();
   }
 
   window.financeChart = new Chart(ctx,{
     type:'bar',
-    data:{
-      labels,
-      datasets:[
-        {label:'مبلغ کل (ریال)', data:dataRial},
-        {label:'مبلغ کل (دلار)', data:dataUSD}
-      ]
-    },
+    data:{labels, datasets:[
+      {label:'مبلغ کل (ریال)', data:dataRial},
+      {label:'مبلغ کل (دلار)', data:dataUSD}
+    ]},
     options:{responsive:true}
   });
 }
-
-
-  // === SEARCH ===
-  function searchContracts(){
-  searchResult.innerHTML='';
+// ================== SEARCH ==================
+async function searchContracts(){
   const text = sText.value.trim();
   if(!text) return;
 
-  getVisibleContracts().filter(c=>{
+  const contractsSnapshot = await db.collection('contracts').get();
+  const allContracts = contractsSnapshot.docs.map(d=>({id:d.id,...d.data()}));
+
+  const visibleContracts = currentUser.role==='admin'||currentUser.role==='supermanager'
+    ? allContracts
+    : allContracts.filter(c=>c.mg===currentUser.mg);
+
+  searchResult.innerHTML = '';
+  visibleContracts.filter(c=>{
     return Object.values(c).some(v=>String(v).includes(text));
   }).forEach(c=>{
-    const delivered = c.deliveries.reduce((a,b)=>a+b.qty,0);
-    const p = c.count ? Math.min(100, Math.round(delivered/c.count*100)) : 0;
-    const progressRatio = c.count ? delivered / c.count : 0;
-    const paidR = Math.round(c.commitR * progressRatio);
-    const paidD = Math.round(c.commitD * progressRatio);
+    const delivered = c.deliveries?.reduce((a,b)=>a+b.qty,0) || 0;
+    const progress = c.count ? Math.min(100, Math.round(delivered/c.count*100)) : 0;
+    const paidR = Math.round(c.commitR * (delivered/c.count || 0));
+    const paidD = Math.round(c.commitD * (delivered/c.count || 0));
     const debtR = c.assignR - paidR;
     const debtD = c.assignD - paidD;
 
-    searchResult.innerHTML+=`<tr>
-      <td>${c.name}</td>
-      <td>${c.mg}</td>
-      <td>${p}%</td>
-      <td>${formatNumber(debtR,'rial')}<br>${formatNumber(debtD,'usd')}</td>
-      <td>
-        <button onclick="editContract(${c.id})">ویرایش</button>
-        <button class="red" onclick="deleteContract(${c.id})">حذف</button>
-        <button onclick="openDelivery(${c.id})">تحویل</button>
-        <button onclick="openDesc(${c.id})">توضیحات</button>
-        <button onclick="openDetail(${c.id})">جزئیات</button>
-      </td>
-    </tr>`;
+    searchResult.innerHTML += `
+      <tr>
+        <td>${c.name}</td>
+        <td>${c.mg}</td>
+        <td>${progress}%</td>
+        <td>${formatNumber(debtR,'rial')}<br>${formatNumber(debtD,'usd')}</td>
+        <td>
+          <button onclick="editContract('${c.id}')">ویرایش</button>
+          <button class="red" onclick="deleteContract('${c.id}')">حذف</button>
+          <button onclick="openDelivery('${c.id}')">تحویل</button>
+          <button onclick="openDesc('${c.id}')">توضیحات</button>
+          <button onclick="openDetail('${c.id}')">جزئیات</button>
+        </td>
+      </tr>`;
   });
 }
 
-  // === RENDER ALL ===
-  function renderEditMg(){ eMg.innerHTML=''; g('managements').forEach(m=>{ eMg.innerHTML+=`<option>${m.name}</option>`; }) }
-  function renderAll(){
-    mgList.innerHTML=''; g('managements').forEach(m=>{ mgList.innerHTML+=`<li><i class="bi bi-building"></i> ${m.name} <button class="red" onclick="deleteManagement(${m.id})"><i class="bi bi-trash"></i></button></li>`; });
-    cMg.innerHTML=uMg.innerHTML=''; g('managements').forEach(m=>{ cMg.innerHTML+=`<option>${m.name}</option>`; uMg.innerHTML+=`<option>${m.name}</option>`; });
-    editUser.innerHTML=''; g('users').forEach(u=>{ editUser.innerHTML+=`<option value="${u.id}">${u.username}</option>`; });
-    renderContracts(); renderDashboard(); renderFinanceDashboard();
-  }
-function updateUserInfo() {
-  if(!currentUser) return;
+// ================== CONTRACT DESCRIPTION ==================
+let descContractId = null;
 
-  userInfo.innerText = currentUser.username;
-  userAvatar.src = currentUser.avatar || "https://via.placeholder.com/32";
-  userAvatar.style.display = "block"; // بعد ورود نشان بده
-}
-
-
-
-
-
-  // === CLOSE MODALS ON BACKGROUND CLICK ===
-  deliveryModal.addEventListener('click', e=>{ if(e.target===deliveryModal) closeDelivery(); });
-  editContractModal.addEventListener('click', e=>{ if(e.target===editContractModal) closeEditContract(); });
-
-  // === EXPORT TO EXCEL ===
-  function exportContractsExcel(){
-    const contractsData = getVisibleContracts().map(c=>{
-      const delivered = c.deliveries.reduce((a,b)=>a+b.qty,0);
-      const progress = c.count ? Math.min(100, Math.round(delivered/c.count*100)) : 0;
-      const filesList = c.files && c.files.length ? c.files.map(f=>f.name).join(", ") : "";
-      return {
-        "نام قرارداد": c.name,
-        "شماره قرارداد": c.number,
-        "صنایع": c.industries,
-        "گروه": c.group,
-        "صنعت": c.industry,
-        "مدیریت": c.mg,
-        "مبلغ کل (ریال)": c.totalR,
-        "مبلغ کل (دلار)": c.totalD,
-        "مبلغ واگذاری (ریال)": c.assignR,
-        "مبلغ واگذاری (دلار)": c.assignD,
-        "تعهد صنعت (ریال)": c.commitR,
-        "تعهد صنعت (دلار)": c.commitD,
-        "تعداد محصول": c.count,
-        "تعداد تحویل شده": delivered,
-        "درصد پیشرفت": progress+"%",
-        "فایل‌های پیوست": filesList
-      };
-    });
-    const worksheet = XLSX.utils.json_to_sheet(contractsData);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "قراردادها");
-    XLSX.writeFile(workbook, "Contracts.xlsx");
-  }
-
-  // === TOAST & UTIL ===
-  function showToast(message,color="#22c55e"){
-    const t=document.getElementById('toast');
-    t.innerText=message;
-    t.style.background=color;
-    t.style.display='block';
-    setTimeout(()=>t.style.display='none',3000);
-  }
-  function formatNumber(value,type){
-    if(type==='rial') return value.toLocaleString()+' ریال';
-    if(type==='usd') return '$'+value.toLocaleString();
-    return value;
-  }
-
-
-  let descContractId = null;
-
-  function openDesc(id){
-  const c = g('contracts').find(x=>x.id===id);
+function openDesc(id){
   descContractId = id;
-  document.getElementById("descText").value = c.description || "";
-  document.getElementById("descModal").classList.add("show");
+  db.collection('contracts').doc(id).get().then(doc=>{
+    descText.value = doc.data().description || '';
+    descModal.classList.add('show');
+  });
 }
 
 function closeDesc(){
-  document.getElementById("descModal").classList.remove("show");
+  descModal.classList.remove('show');
 }
 
 function saveDesc(){
-  const list = g('contracts');
-  list.find(c=>c.id===descContractId).description =
-    document.getElementById("descText").value;
-  s('contracts', list);
-  closeDesc();
-  showToast("توضیحات ذخیره شد");
+  db.collection('contracts').doc(descContractId).update({
+    description: descText.value
+  }).then(()=>{
+    closeDesc();
+    showToast("توضیحات ذخیره شد");
+  });
 }
 
+// ================== CONTRACT DETAILS ==================
 function openDetail(id){
-  const c=g('contracts').find(x=>x.id===id);
-  const content = document.getElementById("detailContent");
-
-  content.innerHTML = `
-  <b>نام:</b> ${c.name}<br>
-  <b>شماره:</b> ${c.number}<br>
-  <b>صنایع:</b> ${c.industries}<br>
-  <b>گروه:</b> ${c.group}<br>
-  <b>صنعت:</b> ${c.industry}<br>
-  <b>مدیریت:</b> ${c.mg}<br>
-  <b>مبلغ کل ریال:</b> ${c.totalR.toLocaleString()}<br>
-  <b>مبلغ کل دلار:</b> ${c.totalD.toLocaleString()}<br>
-  <b>واگذاری ریال:</b> ${c.assignR.toLocaleString()}<br>
-  <b>واگذاری دلار:</b> ${c.assignD.toLocaleString()}<br>
-  <b>تعهد ریال:</b> ${c.commitR.toLocaleString()}<br>
-  <b>تعهد دلار:</b> ${c.commitD.toLocaleString()}<br>
-  <b>تعداد محصول:</b> ${c.count}<br>
-  <b>توضیحات:</b><br>${c.description||''}
-  `;
-  document.getElementById("detailModal").classList.add("show");
+  db.collection('contracts').doc(id).get().then(doc=>{
+    const c = doc.data();
+    detailContent.innerHTML = `
+      <b>نام:</b> ${c.name}<br>
+      <b>شماره:</b> ${c.number}<br>
+      <b>صنایع:</b> ${c.industries}<br>
+      <b>گروه:</b> ${c.group}<br>
+      <b>صنعت:</b> ${c.industry}<br>
+      <b>مدیریت:</b> ${c.mg}<br>
+      <b>مبلغ کل ریال:</b> ${c.totalR.toLocaleString()}<br>
+      <b>مبلغ کل دلار:</b> ${c.totalD.toLocaleString()}<br>
+      <b>واگذاری ریال:</b> ${c.assignR.toLocaleString()}<br>
+      <b>واگذاری دلار:</b> ${c.assignD.toLocaleString()}<br>
+      <b>تعهد ریال:</b> ${c.commitR.toLocaleString()}<br>
+      <b>تعهد دلار:</b> ${c.commitD.toLocaleString()}<br>
+      <b>تعداد محصول:</b> ${c.count}<br>
+      <b>توضیحات:</b><br>${c.description||''}
+    `;
+    detailModal.classList.add('show');
+  });
 }
 
 function closeDetail(){
-  document.getElementById("detailModal").classList.remove("show");
+  detailModal.classList.remove('show');
 }
 
-console.log("search ok");
-
-document.addEventListener("DOMContentLoaded", renderAll);
-
-// ================= PROFILE SYSTEM =================
+// ================== PROFILE SYSTEM ==================
 const profileAvatarInput = document.getElementById('profileAvatar');
 const profileAvatarPreview = document.getElementById('profileAvatarPreview');
 
@@ -843,72 +765,59 @@ profileAvatarInput.addEventListener('change', function(){
   const file = this.files[0];
   if(!file) return;
 
-  // ✅ بررسی فرمت فایل
   const allowedTypes = ['image/jpeg','image/jpg','image/png','image/webp'];
   if(!allowedTypes.includes(file.type)){
     alert('فرمت عکس نامناسب است. لطفاً jpg, png یا webp آپلود کنید.');
-    this.value = ''; // فایل را پاک کن
-    return;
-  }
-
-  // ✅ بررسی حجم فایل (500 کیلوبایت)
-  const maxSizeKB = 500;
-  if(file.size > maxSizeKB * 1024){
-    alert('حجم عکس بیش از 500 کیلوبایت است. لطفاً عکس کوچک‌تر انتخاب کنید.');
     this.value = '';
     return;
   }
 
-  // ✅ نمایش پیش‌نمایش
+  const maxSizeKB = 500;
+  if(file.size > maxSizeKB * 1024){
+    alert('حجم عکس بیش از 500 کیلوبایت است.');
+    this.value = '';
+    return;
+  }
+
   const reader = new FileReader();
   reader.onload = e => profileAvatarPreview.src = e.target.result;
   reader.readAsDataURL(file);
 });
 
-
-// open modal
+// Open modal
 function openProfileModal() {
   if(!currentUser) return alert("ابتدا وارد شوید");
-
   profileUsername.value = currentUser.username;
   profilePassword.value = "";
   profileAvatarPreview.src = currentUser.avatar || "";
-
   profileModal.classList.add("show");
 }
 
-// close modal
+// Close modal
 function closeProfileModal(){
   profileModal.classList.remove("show");
 }
 
-// save profile
-function saveProfile() {
+// Save profile
+async function saveProfile() {
   const password = profilePassword.value.trim();
   const passwordConfirm = profilePasswordConfirm.value.trim();
 
-  // اگر یکی از فیلدها پر نشده باشد، اجازه نده
   if(password && password !== passwordConfirm){
     return alert("رمز عبور و تکرار آن یکسان نیست!");
   }
 
-  const users = g('users');
-  const u = users.find(x => x.id === currentUser.id);
-  if(!u) return alert("کاربر پیدا نشد");
+  const userRef = db.collection('users').doc(currentUser.id);
+  const updateData = {};
+  if(password) updateData.password = password;
+  if(profileAvatarPreview.src) updateData.avatar = profileAvatarPreview.src;
 
-  if(password) u.password = password;
-  if(profileAvatarPreview.src) u.avatar = profileAvatarPreview.src;
-
-  s('users', users);
-  localStorage.currentUser = JSON.stringify(u);
-  currentUser = u;
-
+  await userRef.update(updateData);
+  currentUser = {...currentUser, ...updateData};
   updateUserInfo();
   showToast("پروفایل ذخیره شد");
   closeProfileModal();
 }
-
-
 
 </script>
 
