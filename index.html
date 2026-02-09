@@ -359,6 +359,17 @@ header {
    
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
+  // ======== ایجاد کاربر پیش‌فرض ========
+if (!localStorage.init) {
+  localStorage.init = 1;
+  localStorage.users = JSON.stringify([
+    { id: 1, username: "admin", password: "1234", role: "admin", mg: "مرکزی" }
+  ]);
+  localStorage.managements = JSON.stringify([{ id: 1, name: "مرکزی" }]);
+  localStorage.contracts = JSON.stringify([]);
+  alert("کاربر پیش‌فرض ساخته شد:\nنام کاربری: admin\nرمز عبور: 1234");
+}
+
   // ================== FIREBASE INIT ==================
 const firebaseConfig = {
   apiKey: "AIzaSyB9GPuMyCwXo2rGePnM81Q6Jq15fqAqsGE",
